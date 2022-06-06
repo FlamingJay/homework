@@ -3,7 +3,10 @@
 
 1.自动化下载
 
-    使用的是tkinker
+    使用的是tkinker。打包exe的时候，需要加载gif，所以执行的命令为：
+    1、pyinstaller -F -w -i .\pic.ico .\shortVideo.py
+    2、修改spec文件，将资源文件加载到其中，pathex改为文件所在路径，datas改为gif的相对路径
+    3、pyinstaller shortVideo.spec
 
 2.自动化剪辑
 
