@@ -78,7 +78,7 @@ class YouTubeUploaderLong:
         title = self.browser.find_element_by_id(YOUTUBE_CONSTANT.TEXTBOX)
         title.clear()
         self.browser.driver.implicitly_wait(10)
-        ActionChains(self.browser.driver).move_to_element(title).click(title).send_keys(self.metadata_dict[self.account + '_title']).perform()
+        ActionChains(self.browser.driver).move_to_element(title).click(title).send_keys(self.metadata_dict[self.account + '_title_long']).perform()
         time.sleep(YOUTUBE_CONSTANT.USER_WAITING_TIME)
 
         desc = self.browser.find_elements_by_id(YOUTUBE_CONSTANT.TEXTBOX)[1]
