@@ -24,7 +24,9 @@ class ChromeDriver(object):
                  load_proxy_checker_website: bool = False
                  ):
         self.cookies_folder_path = cookies_folder_path
-        self.driver = uc.Chrome(version_main=91)
+        options = uc.ChromeOptions()
+        # options.add_argument("--headless")
+        self.driver = uc.Chrome(version_main=91, options=options)
         if full_screen:
             self.driver.fullscreen_window()
 
@@ -138,7 +140,7 @@ class ChromeDriver(object):
         '''
         return self.driver.find_element_by_class_name(class_name)
 
-    def has_cookies_for_current_website(self, account : str = "", create_folder_if_not_exists: bool = True) -> bool:
+    def has_cookies_for_current_website(self, account: str = "", create_folder_if_not_exists: bool = True) -> bool:
         return os.path.exists(
             self.__cookies_path(account,
                 create_folder_if_not_exists=create_folder_if_not_exists

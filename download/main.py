@@ -2,6 +2,7 @@ import tkinter as tk  # 使用Tkinter前需要先导入
 from tkinter.ttk import Combobox
 from animationLabel import MyLabel
 from getDouYinV2 import getDouYin
+from getYoutube import getYoutube
 import tkinter.messagebox
 from tkinter.filedialog import askdirectory
 import time
@@ -72,13 +73,13 @@ class shortVideo():
             # 创建下载器
             self.autoloader = getDouYin()
         elif web == 'youtube':
-            # self.autoloader = getYouTube()
+            self.autoloader = getYoutube()
             self.eblog.log(time.strftime('%Y-%m-%d %H:%M:%S %A') + "创建youtube下载器")
             self.eblog.update()
-            tk.messagebox.showerror(title='hey', message='先用抖音douyin那个！')
+
         else:
             self.autoloader = None
-            tk.messagebox.showerror(title='hey', message='先用抖音douyin那个！')
+            tk.messagebox.showerror(title='hey', message='tiktok还不太行呢')
 
     def __select_path(self):
         '''

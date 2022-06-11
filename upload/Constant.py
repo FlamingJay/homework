@@ -3,9 +3,16 @@ class YOUTUBE_CONSTANT:
     YOUTUBE_URL = 'https://www.youtube.com'
     YOUTUBE_STUDIO_URL = 'https://studio.youtube.com'
     YOUTUBE_UPLOAD_URL = 'https://www.youtube.com/upload'
-    USER_WAITING_TIME = 2
-    LOAD_TIME = 5
-    WAIT_TIME = 10
+
+    # 时间相关
+    USER_WAITING_TIME = 3
+    CONFIRM_TIME = 5
+    LOAD_TIME = 10
+    SHORT_WAIT_TIME = 20
+    LONG_WAIT_TIME = 60
+    LONG_UPLOAD_TIME = 600
+
+    # xpath相关
     VIDEO_TITLE = 'title'
     VIDEO_DESCRIPTION = 'description'
     VIDEO_TAGS = 'tags'
@@ -24,6 +31,7 @@ class YOUTUBE_CONSTANT:
     TAGS_INPUT_CONTAINER = '/html/body/ytcp-uploads-dialog/tp-yt-paper-dialog/div/ytcp-animatable[1]/ytcp-video-metadata-editor/div/ytcp-video-metadata-editor-advanced/div[3]/ytcp-form-input-container/div[1]/div[2]/ytcp-free-text-chip-bar/ytcp-chip-bar/div'
 
     TAGS_INPUT = 'text-input'
+    TOOGLE_BUTN = "toggle-button"
     NEXT_BUTTON = 'next-button'
     PUBLIC_BUTTON = 'PUBLIC'
     VIDEO_URL_CONTAINER = "//span[@class='video-url-fadeable style-scope ytcp-video-info']"

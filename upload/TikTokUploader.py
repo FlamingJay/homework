@@ -1,3 +1,4 @@
+#-*- coding: utf-8 -*-
 from typing import DefaultDict, Optional
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.keys import Keys
@@ -22,12 +23,12 @@ def load_metadata(metadata_json_path: Optional[str] = None) -> DefaultDict[str, 
 
 
 class TiktokUploader:
-    def __init__(self, account: str, video_path: str, metadata_json_path: Optional[str] = None, thumbnail_path: Optional[str] = None) -> None:
+    def __init__(self, root_path: str, account: str, video_path: str, metadata_json_path: Optional[str] = None, thumbnail_path: Optional[str] = None) -> None:
         self.account = account
         self.video_path = video_path
         self.thumbnail_path = thumbnail_path
         self.metadata_dict = load_metadata(metadata_json_path)
-        current_working_dir = str(Path.cwd())
+        current_working_dir = root_path
         self.browser = ChromeDriver(current_working_dir, current_working_dir)
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(logging.DEBUG)
@@ -62,11 +63,9 @@ class TiktokUploader:
 
     def __upload(self) -> (bool, Optional[str]):
         # 要上传视频的路径
-        absolute_video_path = str(Path.cwd() / self.video_path)
+        absolute_video_path = self.video_path
 
         # 打开相应的网页
-        # self.browser.get(TIKTOK_CONSTANT.TIKTOK_URL)
-        # time.sleep(TIKTOK_CONSTANT.USER_WAITING_TIME)
         self.logger.info("step 3: open the tiktok website....")
         self.browser.get(TIKTOK_CONSTANT.TIKTOK_UPLOAD_URL)
         time.sleep(TIKTOK_CONSTANT.LOAD_TIME)
@@ -130,6 +129,15 @@ class TiktokUploader:
 
         self.browser.find_element_by_xpath(xpath).send_keys(dic['caption'])
         time.sleep(TIKTOK_CONSTANT.USER_WAITING_TIME)
+
+        # # todo: 将@和#的部分也做出来
+        # tags = dic['tags'].split(",")
+        # self.browser.find_element_by_xpath(xpath).send_keys("  ")
+        # if len(tags) > 0:
+        #     for tag in tags:
+        #         self.browser.find_element_by_xpath(xpath).send_keys("#" + tag)
+        #         self.browser.find_element_by_xpath(xpath).send_keys(Keys.ENTER)
+        #         time.sleep(TIKTOK_CONSTANT.USER_WAITING_TIME)
 
 
 if __name__ == "__main__":
