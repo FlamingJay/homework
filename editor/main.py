@@ -16,13 +16,22 @@ class login(QWidget):
     def __init__(self):
         super(login, self).__init__()
         self.background_pic = None
-        self.pic_width = 1920
-        self.pic_height = 1080
+        # self.pic_width = 1920
+        # self.pic_height = 1080
+        # 视频裁剪的起点、宽度和高度
+        self.crop_point = dict()
+        self.crop_point["crop_x_start"] = 0
+        self.crop_point["crop_y_start"] = 0
+        self.crop_point["crop_x_end"] = 0
+        self.crop_point["crop_y_end"] = 0
         self.background_audio = None
         self.audio_vol = 100
+        self.water_logo = None
 
         self.func1_input_path = None
         self.func1_output_path = None
+        self.front_cut_dur = 0
+        self.end_cut_dur = 0
 
         self.func2_videos = []
         self.func2_file_list = []
@@ -46,39 +55,48 @@ class login(QWidget):
         self.picture_le.move(120, 30)
         self.picture_le.resize(250, 30)
 
-        self.width_text = QLabel('宽度：', self)
-        self.width_text.move(400, 30)
-        self.width_text.resize(30, 30)
-
-        self.width_edit = QLineEdit("1920", self)
-        self.width_edit.move(450, 30)
-        self.width_edit.resize(40, 30)
-        self.pic_width = int(self.width_edit.text())
-
-        self.height_text = QLabel('高度：', self)
-        self.height_text.move(500, 30)
-        self.height_text.resize(30, 30)
-
-        self.height_edit = QLineEdit("1080", self)
-        self.height_edit.move(550, 30)
-        self.height_edit.resize(40, 30)
-        self.pic_height = int(self.height_edit.text())
+        # self.width_text = QLabel('宽度：', self)
+        # self.width_text.move(400, 30)
+        # self.width_text.resize(30, 30)
+        #
+        # self.width_edit = QLineEdit("1920", self)
+        # self.width_edit.move(450, 30)
+        # self.width_edit.resize(40, 30)
+        # self.pic_width = int(self.width_edit.text())
+        #
+        # self.height_text = QLabel('高度：', self)
+        # self.height_text.move(500, 30)
+        # self.height_text.resize(30, 30)
+        #
+        # self.height_edit = QLineEdit("1080", self)
+        # self.height_edit.move(550, 30)
+        # self.height_edit.resize(40, 30)
+        # self.pic_height = int(self.height_edit.text())
 
         # 背景乐
         self.audio_btn = QPushButton('背景乐', self)
-        self.audio_btn.move(30, 90)
+        self.audio_btn.move(30, 70)
         self.audio_btn.resize(60, 30)
         self.audio_btn.clicked.connect(self.__select_audio)
         self.audio_le = QTextBrowser(self)
-        self.audio_le.move(120, 90)
+        self.audio_le.move(120, 70)
         self.audio_le.resize(250, 30)
 
         self.volume_text = QLabel('音量：', self)
-        self.volume_text.move(400, 90)
+        self.volume_text.move(400, 70)
         self.volume_text.resize(30, 30)
         self.volume = QTextEdit("100", self)
-        self.volume.move(450, 90)
+        self.volume.move(450, 70)
         self.volume.resize(40, 30)
+
+        # 水印
+        self.water_btn = QPushButton('水印', self)
+        self.water_btn.move(30, 110)
+        self.water_btn.resize(60, 30)
+        self.water_btn.clicked.connect(self.__select_water_pic)
+        self.water_le = QTextBrowser(self)
+        self.water_le.move(120, 110)
+        self.water_le.resize(250, 30)
 
         # 功能1：自动剪辑
         self.func1 = QLabel('功能1：自动编辑', self)
@@ -88,23 +106,52 @@ class login(QWidget):
         self.front_text = QLabel('片头：', self)
         self.front_text.move(30, 180)
         self.front_text.resize(30, 30)
-        self.front = QTextEdit("0", self)
+        self.front = QLineEdit("0", self)
         self.front.move(70, 180)
         self.front.resize(30, 30)
+        self.front_cut_dur = int(self.front.text())
 
         self.end_text = QLabel('片尾：', self)
         self.end_text.move(110, 180)
         self.end_text.resize(30, 30)
-        self.end = QTextEdit("0", self)
+        self.end = QLineEdit("0", self)
         self.end.move(150, 180)
         self.end.resize(30, 30)
+        self.end_cut_dur = int(self.end.text())
 
-        self.water_text = QLabel('水印：', self)
-        self.water_text.move(250, 180)
-        self.water_text.resize(30, 30)
-        self.water_logo = QTextBrowser(self)
-        self.water_logo.move(300, 180)
-        self.water_logo.resize(230, 30)
+        # 裁剪左上角坐标
+        self.crop_x_start_text = QLabel('起点x：', self)
+        self.crop_x_start_text.move(250, 180)
+        self.crop_x_start_text.resize(40, 30)
+        self.crop_x_start_line = QLineEdit("0", self)
+        self.crop_x_start_line.move(300, 180)
+        self.crop_x_start_line.resize(30, 30)
+        self.crop_x_start_line.editingFinished.connect(lambda :self.__value_change("crop_x_start", self.crop_x_start_line.text()))
+
+        self.crop_y_start_text = QLabel('起点y：', self)
+        self.crop_y_start_text.move(340, 180)
+        self.crop_y_start_text.resize(40, 30)
+        self.crop_y_start_line = QLineEdit("0", self)
+        self.crop_y_start_line.move(390, 180)
+        self.crop_y_start_line.resize(30, 30)
+        self.crop_y_start_line.editingFinished.connect(lambda :self.__value_change("crop_y_start", self.crop_y_start_line.text()))
+
+        # 裁剪右下角坐标
+        self.crop_x_end_text = QLabel('终点x：', self)
+        self.crop_x_end_text.move(440, 180)
+        self.crop_x_end_text.resize(40, 30)
+        self.crop_x_end_edit = QLineEdit("0", self)
+        self.crop_x_end_edit.move(490, 180)
+        self.crop_x_end_edit.resize(40, 30)
+        self.crop_x_end_edit.editingFinished.connect(lambda :self.__value_change("crop_x_end", self.crop_x_end_edit.text()))
+
+        self.crop_y_end_text = QLabel('终点y：', self)
+        self.crop_y_end_text.move(540, 180)
+        self.crop_y_end_text.resize(40, 30)
+        self.crop_y_end_edit = QLineEdit("0", self)
+        self.crop_y_end_edit.move(580, 180)
+        self.crop_y_end_edit.resize(40, 30)
+        self.crop_y_end_edit.editingFinished.connect(lambda :self.__value_change("crop_y_end", self.crop_y_end_edit.text()))
 
         # 原视频，用于拼接
         self.func1_input_path_btn = QPushButton('原视频目录', self)
@@ -124,7 +171,7 @@ class login(QWidget):
         self.func1_save_path_text.resize(250, 30)
 
         self.func1_run_btn = QPushButton('运行', self)
-        self.func1_run_btn.move(460, 220)
+        self.func1_run_btn.move(540, 220)
         self.func1_run_btn.resize(70, 70)
         self.func1_run_btn.clicked.connect(self.__func1_run)
 
@@ -188,6 +235,8 @@ class login(QWidget):
         self.setWindowTitle('视频剪切')  # 设置界面标题名
         self.show()
 
+    def __value_change(self, target, val):
+        self.crop_point[target] = val
 
     def __select_func1_input_path(self):
         self.func1_input_path = QFileDialog.getExistingDirectory(self, "选择视频路径", "E:/")
@@ -206,6 +255,11 @@ class login(QWidget):
     def __select_audio(self):
         self.background_audio, fileType = QFileDialog.getOpenFileName(self, "选择源文件", "E:/")
         self.audio_le.setText(str(self.background_audio))
+
+    # 选择水印
+    def __select_water_pic(self):
+        self.water_logo, fileType = QFileDialog.getOpenFileName(self, "选择源文件", "E:/")
+        self.water_le.setText(str(self.water_logo))
 
     def __select_func2_input(self):
         self.__reset_func2_input()
@@ -237,12 +291,19 @@ class login(QWidget):
         muisic = [self.background_audio] * count
         pic = [self.background_pic] * count
         save_path = [self.func1_output_path] * count
-        width = [int(self.pic_width)] * count
-        height = [int(self.pic_height)] * count
+        # width = [int(self.pic_width)] * count
+        # height = [int(self.pic_height)] * count
+        crop_x_start = [int(self.crop_point["crop_x_start"])] * count
+        crop_y_start = [int(self.crop_point["crop_y_start"])] * count
+        crop_x_end = [int(self.crop_point["crop_x_end"])] * count
+        crop_y_end = [int(self.crop_point["crop_y_end"])] * count
+        water_logo = [self.water_logo] * count
+        front_cut = [self.front_cut_dur] * count
+        end_cut = [self.end_cut_dur] * count
 
         # 对每一个视频都做同样的操作
         with multiprocessing.Pool(multiprocessing.cpu_count()) as pool:
-            pool.map(single_process, zip(videos, names, muisic, pic, save_path, width, height))
+            pool.map(single_process, zip(videos, names, muisic, pic, save_path, crop_x_start, crop_y_start, crop_x_end, crop_y_end, water_logo, front_cut, end_cut))
 
         self.__reset_func1()
         self.__reset_common()
@@ -252,6 +313,8 @@ class login(QWidget):
         # 计算总时长,显示列表
         for file in self.func2_file_list:
             xx = VideoFileClip(file)
+
+            xx = xx.subclip(self.front_cut_dur, xx.duration-self.end_cut_dur)
             duration = xx.duration
             self.func2_videos.append(xx)
             self.func2_duration_list.append(duration)
@@ -284,24 +347,52 @@ class login(QWidget):
         if len(videos) < 1:
             assert "重新选择"
 
-        res = concatenate_videoclips(videos)
+        all_videos = concatenate_videoclips(videos)
+        all_videos = all_videos.set_position('center')
+
         # 背景乐
         if self.background_audio is not None:
-            res = res.without_audio()
+            all_videos = all_videos.without_audio()
 
             audio_clip = AudioFileClip(self.background_audio)
             audio = afx.audio_loop(audio_clip, duration=self.func2_total_duration)
-            res = res.set_audio(audio)
+            all_videos = all_videos.set_audio(audio)
 
         # 背景图
         if self.background_pic is not None:
-            res = res.set_position('center')
+
             background_clip = ImageClip(self.background_pic)
             background_clip = background_clip.set_pos('center').set_duration(self.func2_total_duration)
-            # 编辑图片的尺寸
-            background_clip = background_clip.resize((self.pic_width, self.pic_height))
+            back_size = background_clip.size
+
+        if self.water_logo is not None:
+            water_clip = ImageClip(self.water_logo)
+            water_clip = water_clip.set_pos('center').set_duration(self.func2_total_duration)
+
+        if (self.background_pic is not None) and (self.water_logo is not None):
+            # 视频适配背景
+            if back_size[0] > back_size[1]:
+                new_height = 1080
+                new_width = new_height * video.size[0] / video.size[1]
+            else:
+                new_width = 1080
+                new_height = new_width * video.size[1] / video.size[0]
+            all_videos = all_videos.resize((new_width, new_height))
+
             # 叠层
-            res = CompositeVideoClip([background_clip, res])
+            res = CompositeVideoClip([background_clip, all_videos, water_clip])
+        elif self.background_pic is not None:
+            if back_size[0] > back_size[1]:
+                new_height = 1080
+                new_width = new_height * video.size[0] / video.size[1]
+            else:
+                new_width = 1080
+                new_height = new_width * video.size[1] / video.size[0]
+            all_videos = all_videos.resize((new_width, new_height))
+
+            res = CompositeVideoClip([background_clip, all_videos])
+        elif self.water_logo is not None:
+            res = CompositeVideoClip([all_videos, water_clip])
 
         # 写入
         cur_time = datetime.date.today()
@@ -315,6 +406,14 @@ class login(QWidget):
         self.__reset_common()
 
     def __reset_func1(self):
+        self.crop_point["crop_x_start"] = 0
+        self.crop_point["crop_y_start"] = 0
+        self.crop_point["crop_x_end"] = 0
+        self.crop_point["crop_y_end"] = 0
+        self.crop_x_start_line.setText("0")
+        self.crop_x_end_edit.setText("0")
+        self.crop_y_start_line.setText("0")
+        self.crop_y_end_edit.setText("0")
         self.func1_input_path = None
         self.func1_input_path_text.setText("")
         self.func1_output_path = None
@@ -350,11 +449,13 @@ class login(QWidget):
         self.background_pic = None
         self.picture_le.setText("")
 
-        self.pic_width = 1920
-        self.pic_height = 1080
+        # self.pic_width = 1920
+        # self.pic_height = 1080
         self.background_audio = None
         self.audio_le.setText("")
         self.audio_vol = 100
+
+        self.water_logo = None
 
     def __add_item(self):
         # 打开文件
