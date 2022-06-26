@@ -1,11 +1,12 @@
 from moviepy.video.io.VideoFileClip import VideoFileClip
-from moviepy.editor import afx, AudioFileClip, ImageClip, CompositeVideoClip
+from moviepy.editor import afx, AudioFileClip, ImageClip, CompositeVideoClip, CompositeAudioClip
 import moviepy.video.fx.all as vfx
+from moviepy.audio.fx.volumex import volumex
 import os, sys
 
 
 def single_process(args):
-    video_file, name, background_music, background_pic, save_path, crop_x_start, crop_y_start, crop_x_end, crop_y_end, logo, front, end = args
+    video_file, name, background_music, volume, audio_off, background_pic, save_path, crop_x_start, crop_y_start, crop_x_end, crop_y_end, logo, front, end = args
     video = VideoFileClip(video_file)
     video = video.subclip(front, video.duration - end)
 
@@ -22,11 +23,18 @@ def single_process(args):
 
     # 加背景乐
     if background_music is not None:
-        video = video.without_audio()
-
+        # 要添加的音频
         audio_clip = AudioFileClip(background_music)
         audio = afx.audio_loop(audio_clip, duration=duration)
-        video = video.set_audio(audio)
+        audio = audio.volumex(volume / 100)
+
+        if audio_off:
+            video = video.without_audio()
+            video = video.set_audio(audio)
+        else:
+            # 原来的音频
+            video_audio_clip = video.audio
+            video = video.set_audio(CompositeAudioClip([video_audio_clip, audio]))
 
     # 加背景图
     if background_pic is not None:

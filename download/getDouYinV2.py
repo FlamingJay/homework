@@ -40,7 +40,7 @@ class getDouYin(AutoDownLoader, ABC):
         # 视频数量
         sm_count = re.findall('"aweme_count":(\w+)', se.text)
         # 用户名
-        nickname = re.findall('"nickname":"(\w+)"', se.text)
+        nickname = re.findall('"nickname":"(.*?)"', se.text)
         nickname_dir = os.path.join(save_path, nickname[0])
         if not os.path.exists(nickname_dir):
             os.makedirs(nickname_dir)
@@ -78,11 +78,11 @@ class getDouYin(AutoDownLoader, ABC):
                 # 无水印视频链接地址
                 video_url = s['video']['play_addr_lowbr']['url_list'][0]
                 text = re.sub("(\#\w+)|(\@\w+)", '', text)
-                logger.log("-- 这是第" + str(id) + "个视频，" + "视频名称为：{0},点赞数为:{1},评论数为:{2},分享数量为:{3}\n"
+                logger.log("-- 总共有{}个，这是第{}个视频，".format(str(sm_count), str(id)) + "视频名称为：{0},点赞数为:{1},评论数为:{2},分享数量为:{3}\n"
                            .format(text, str(dianzan), str(pinglun), str(fenxiang)))
                 logger.update()
 
-                text = str(id) + "_" + text.replace(" |\t|\n", "")
+                text = text.replace(" |\t|\n", "")
 
                 try:
                     video_path = os.path.join(nickname_dir, text)
@@ -97,7 +97,7 @@ class getDouYin(AutoDownLoader, ABC):
             if (int(id) >= int(sm_count[0])):
                 break
 
-        return True
+        return True, nickname_dir
 
     def __video_downloader(self, video_url, video_name, logger: tklog):
         '''

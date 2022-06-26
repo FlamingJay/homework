@@ -30,11 +30,18 @@ class getYoutube(AutoDownLoader, ABC):
             logger.update()
             return
 
+        namePatt = re.compile(r'"channelId":.*?"title":"(.*?)"')
         longVideoPatt = re.compile(r'"url":"/watch\?v=(.*?)"')
         shortVideoPatt = re.compile(r'"url":"/shorts/(.*?)"')
 
         longVideosPathList = longVideoPatt.findall(yTUBE)
         shortVideoPathList = shortVideoPatt.findall(yTUBE)
+        nameList = namePatt.findall(yTUBE)
+        if len(nameList) > 0:
+            save_path = save_path + os.sep + nameList[0]
+        else:
+            os.mkdir(save_path + os.sep + "tmp")
+            save_path = save_path + os.sep  + "tmp"
 
         for item in longVideosPathList:
             self.__downloadSingleVideo(save_path, "https://www.youtube.com/watch?v=" + item, logger)
@@ -44,6 +51,8 @@ class getYoutube(AutoDownLoader, ABC):
 
         logger.log("下载完所有的视频了！")
         logger.update()
+
+        return True, save_path
 
     def __downloadSingleVideo(self, save_path, vid_url, logger):
         try:

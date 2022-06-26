@@ -2,12 +2,12 @@ import datetime
 import multiprocessing
 
 import win_unicode_console
-from moviepy.editor import concatenate_videoclips, afx, AudioFileClip, ImageClip, CompositeVideoClip
+from moviepy.editor import concatenate_videoclips, afx, AudioFileClip, ImageClip, CompositeVideoClip, CompositeAudioClip
 from VideoProcess import single_process
 
 import sys
 import os
-from PyQt5.QtWidgets import (QWidget, QRadioButton, QPushButton, QLineEdit, QLabel, QApplication, QFileDialog, QListWidget, QListWidgetItem, QTextEdit, QTextBrowser)
+from PyQt5.QtWidgets import (QWidget, QRadioButton, QPushButton, QLineEdit, QLabel, QApplication, QFileDialog, QListWidget, QListWidgetItem, QButtonGroup, QTextBrowser)
 from moviepy.video.io.VideoFileClip import VideoFileClip
 win_unicode_console.enable()
 
@@ -16,8 +16,8 @@ class login(QWidget):
     def __init__(self):
         super(login, self).__init__()
         self.background_pic = None
-        # self.pic_width = 1920
-        # self.pic_height = 1080
+        self.volume = "100"
+        self.original_autio_off = False
         # 视频裁剪的起点、宽度和高度
         self.crop_point = dict()
         self.crop_point["crop_x_start"] = 0
@@ -25,7 +25,6 @@ class login(QWidget):
         self.crop_point["crop_x_end"] = 0
         self.crop_point["crop_y_end"] = 0
         self.background_audio = None
-        self.audio_vol = 100
         self.water_logo = None
 
         self.func1_input_path = None
@@ -41,6 +40,9 @@ class login(QWidget):
 
         self.func2_output_path = None
         self.func2_item_count = 0
+
+        # 合集top10转场
+        self.top10_warm = []
 
         self.initUI()
 
@@ -85,9 +87,15 @@ class login(QWidget):
         self.volume_text = QLabel('音量：', self)
         self.volume_text.move(400, 70)
         self.volume_text.resize(30, 30)
-        self.volume = QTextEdit("100", self)
-        self.volume.move(450, 70)
-        self.volume.resize(40, 30)
+        self.volume_line = QLineEdit("100", self)
+        self.volume_line.move(450, 70)
+        self.volume_line.resize(40, 30)
+        self.volume_line.editingFinished.connect(lambda :self.__value_change("volume", self.volume_line.text()))
+
+        self.audio_save_old_btn = QRadioButton('是否覆盖', self)
+        self.audio_save_old_btn.move(500, 70)
+        self.audio_save_old_btn.resize(80, 30)
+        self.audio_save_old_btn.clicked.connect(self.__choose_audio_status)
 
         # 水印
         self.water_btn = QPushButton('水印', self)
@@ -181,18 +189,34 @@ class login(QWidget):
         self.func2.move(30, 320)
         self.func2.resize(90, 30)
 
+        # 合集类型
+        self.merge_type_text = QLabel('合集类型：', self)
+        self.merge_type_text.move(30, 350)
+        self.merge_type_text.resize(80, 30)
+        self.merge_type_btn_group = QButtonGroup(self)
+        self.normal_btn = QRadioButton('常规', self)
+        self.normal_btn.move(120, 350)
+        self.normal_btn.resize(50, 30)
+        self.top10_btn = QRadioButton('Top10', self)
+        self.top10_btn.move(190, 350)
+        self.top10_btn.resize(50, 30)
+        self.merge_type_btn_group.addButton(self.normal_btn, 11)
+        self.merge_type_btn_group.addButton(self.top10_btn, 12)
+        self.merge_type_btn_group.buttonClicked.connect(self.__select_merge_type)
+
+
         # 选取视频
         self.func2_input_path_btn = QPushButton('原视频', self)
-        self.func2_input_path_btn.move(30, 350)
+        self.func2_input_path_btn.move(30, 390)
         self.func2_input_path_btn.resize(70, 30)
         self.func2_input_path_btn.clicked.connect(self.__select_func2_input)
         self.func2_input_path_text = QTextBrowser(self)
-        self.func2_input_path_text.move(120, 350)
+        self.func2_input_path_text.move(120, 390)
         self.func2_input_path_text.resize(250, 30)
 
         # 显示选取视频的总时长
         self.func2_total_dur_title = QLabel('所选视频总时长：', self)
-        self.func2_total_dur_title.move(400, 350)
+        self.func2_total_dur_title.move(400, 390)
         self.func2_total_dur_title.resize(90, 30)
         self.func2_total_dur_view = QLabel(self)
         self.func2_total_dur_view.move(500, 340)
@@ -200,18 +224,18 @@ class login(QWidget):
 
         # 列表
         self.func2_list_widget = QListWidget(self)
-        self.func2_list_widget.move(30, 400)
-        self.func2_list_widget.resize(600, 320)
+        self.func2_list_widget.move(30, 430)
+        self.func2_list_widget.resize(600, 280)
 
         # 添加按钮
         self.func2_add_btn = QPushButton('+', self)
-        self.func2_add_btn.move(630, 400)
+        self.func2_add_btn.move(630, 430)
         self.func2_add_btn.resize(30, 30)
         self.func2_add_btn.clicked.connect(self.__add_item)
 
         # 删除按钮
         self.func2_del_btn = QPushButton('-', self)
-        self.func2_del_btn.move(630, 450)
+        self.func2_del_btn.move(630, 470)
         self.func2_del_btn.resize(30, 30)
         self.func2_del_btn.clicked.connect(self.__remove_row)
 
@@ -236,7 +260,13 @@ class login(QWidget):
         self.show()
 
     def __value_change(self, target, val):
-        self.crop_point[target] = val
+        if target == "volume":
+            self.volume = val
+        else :
+            self.crop_point[target] = val
+
+    def __choose_audio_status(self):
+        self.original_autio_off = True
 
     def __select_func1_input_path(self):
         self.func1_input_path = QFileDialog.getExistingDirectory(self, "选择视频路径", "E:/")
@@ -300,13 +330,32 @@ class login(QWidget):
         water_logo = [self.water_logo] * count
         front_cut = [self.front_cut_dur] * count
         end_cut = [self.end_cut_dur] * count
+        volume = [int(self.volume)] * count
+        audio_off = [self.original_autio_off] * count
 
         # 对每一个视频都做同样的操作
         with multiprocessing.Pool(multiprocessing.cpu_count()) as pool:
-            pool.map(single_process, zip(videos, names, muisic, pic, save_path, crop_x_start, crop_y_start, crop_x_end, crop_y_end, water_logo, front_cut, end_cut))
+            pool.map(single_process, zip(videos, names, muisic, volume, audio_off, pic, save_path, crop_x_start, crop_y_start, crop_x_end, crop_y_end, water_logo, front_cut, end_cut))
 
         self.__reset_func1()
         self.__reset_common()
+
+    # 选择合集类型
+    def __select_merge_type(self):
+        sender = self.sender()
+        if sender == self.merge_type_btn_group:
+            if self.merge_type_btn_group.checkedId() == 11:
+                self.merge_type = 'normal'
+            elif self.merge_type_btn_group.checkedId() == 12:
+                self.merge_type = 'top10'
+                # 读取top10转场
+                top10_path = QFileDialog.getExistingDirectory(self, "选取top10目录", "E:/")
+                files = os.listdir(top10_path)
+                files.sort(reverse=True)
+                for file in files:
+                    self.top10_warm.append(VideoFileClip(top10_path + "/" + file))
+            else:
+                self.merge_type = 'normal'
 
     # 预处理
     def __func2_preprocess(self):
@@ -347,35 +396,50 @@ class login(QWidget):
         if len(videos) < 1:
             assert "重新选择"
 
-        all_videos = concatenate_videoclips(videos)
+        if self.merge_type == "noraml":
+            all_videos = concatenate_videoclips(videos)
+        elif self.merge_type == "top10":
+            # 读取top10的转场视频
+            tmp_videos = []
+            # 开场
+            tmp_videos.append(self.top10_warm[-2])
+
+            # 视频主体
+            for i in range(len(videos)):
+                tmp_videos.append(self.top10_warm[i])
+
+                # todo：暂时考虑的是竖版视频，将来有横版视频的需求时再处理吧
+                new_height = self.top10_warm[i].size[1]
+                new_width = new_height * videos[i].size[0] / videos[i].size[1]
+                fix_video = videos[i].resize((new_width, new_height))
+                tmp_videos.append(fix_video)
+
+            # 结尾
+            tmp_videos.append(self.top10_warm[-1])
+
+            # 拼接
+            all_videos = concatenate_videoclips(tmp_videos)
+
         all_videos = all_videos.set_position('center')
-
-        # 背景乐
-        if self.background_audio is not None:
-            all_videos = all_videos.without_audio()
-
-            audio_clip = AudioFileClip(self.background_audio)
-            audio = afx.audio_loop(audio_clip, duration=self.func2_total_duration)
-            all_videos = all_videos.set_audio(audio)
 
         # 背景图
         if self.background_pic is not None:
-
             background_clip = ImageClip(self.background_pic)
-            background_clip = background_clip.set_pos('center').set_duration(self.func2_total_duration)
+            background_clip = background_clip.set_pos('center').set_duration(all_videos.duration)
             back_size = background_clip.size
 
         if self.water_logo is not None:
             water_clip = ImageClip(self.water_logo)
-            water_clip = water_clip.set_pos('center').set_duration(self.func2_total_duration)
+            water_clip = water_clip.set_pos('center').set_duration(all_videos.duration)
 
         if (self.background_pic is not None) and (self.water_logo is not None):
             # 视频适配背景
             if back_size[0] > back_size[1]:
-                new_height = 1080
+                new_height = 1080 * 0.946
                 new_width = new_height * video.size[0] / video.size[1]
+                new_height = new_height
             else:
-                new_width = 1080
+                new_width = 1080 * 0.946
                 new_height = new_width * video.size[1] / video.size[0]
             all_videos = all_videos.resize((new_width, new_height))
 
@@ -383,16 +447,31 @@ class login(QWidget):
             res = CompositeVideoClip([background_clip, all_videos, water_clip])
         elif self.background_pic is not None:
             if back_size[0] > back_size[1]:
-                new_height = 1080
+                new_height = 1080 * 0.946
                 new_width = new_height * video.size[0] / video.size[1]
             else:
-                new_width = 1080
+                new_width = 1080 * 0.946
                 new_height = new_width * video.size[1] / video.size[0]
             all_videos = all_videos.resize((new_width, new_height))
 
             res = CompositeVideoClip([background_clip, all_videos])
         elif self.water_logo is not None:
             res = CompositeVideoClip([all_videos, water_clip])
+
+        # 背景乐
+        if self.background_audio is not None:
+            # 要添加的音频
+            audio_clip = AudioFileClip(self.background_audio)
+            audio = afx.audio_loop(audio_clip, duration=res.duration)
+            audio = audio.volumex(int(self.volume) / 100)
+
+            if self.original_autio_off:
+                res = res.without_audio()
+                res = res.set_audio(audio)
+            else:
+                # 原来的音频
+                video_audio_clip = res.audio
+                res = res.set_audio(CompositeAudioClip([video_audio_clip, audio]))
 
         # 写入
         cur_time = datetime.date.today()
@@ -453,8 +532,8 @@ class login(QWidget):
         # self.pic_height = 1080
         self.background_audio = None
         self.audio_le.setText("")
-        self.audio_vol = 100
-
+        self.volume_line.setText("")
+        self.volume = ""
         self.water_logo = None
 
     def __add_item(self):
