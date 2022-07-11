@@ -10,19 +10,16 @@ from ChromeDriver import ChromeDriver
 logging.basicConfig()
 
 
-def load_metadata(metadata_json_path: Optional[str] = None) -> DefaultDict[str, str]:
-    if metadata_json_path is None:
-        return defaultdict(str)
-    with open(metadata_json_path, encoding='utf-8') as metadata_json_file:
-        return defaultdict(str, json.load(metadata_json_file))
-
-
 class YouTubeUploaderLong:
-    def __init__(self, root_path: str, account: str, video_path: str, metadata_json_path: Optional[str] = None, thumbnail_path: Optional[str] = None) -> None:
+    def __init__(self, root_path: str, account: str, video_path: str, title: str, caption: str, description: str, tags: str, title_tags: str, use_file_title:str) -> None:
         self.account = account
         self.video_path = video_path
-        self.thumbnail_path = thumbnail_path
-        self.metadata_dict = load_metadata(metadata_json_path)
+        self.title = title
+        self.caption = caption
+        self.description = description
+        self.tags = tags
+        self.title_tags = title_tags
+        self.use_file_title = use_file_title == "true"
         current_working_dir = root_path
         self.browser = ChromeDriver(current_working_dir, current_working_dir)
         self.logger = logging.getLogger(__name__)
@@ -76,15 +73,22 @@ class YouTubeUploaderLong:
         # 填写title/desc
         self.logger.info("step 5: fill in the title and desc....")
         title = self.browser.find_element_by_id(YOUTUBE_CONSTANT.TEXTBOX)
-        title.clear()
-        self.browser.driver.implicitly_wait(10)
-        ActionChains(self.browser.driver).move_to_element(title).click(title).send_keys(self.metadata_dict[self.account + '_title_long']).perform()
-        time.sleep(YOUTUBE_CONSTANT.USER_WAITING_TIME)
+        if self.use_file_title:
+            self.browser.driver.implicitly_wait(5)
+            ActionChains(self.browser.driver).move_to_element(title).click(title).send_keys(
+                "  " + self.title_tags).perform()
+            time.sleep(YOUTUBE_CONSTANT.USER_WAITING_TIME)
+        else:
+            title.clear()
+            self.browser.driver.implicitly_wait(5)
+            ActionChains(self.browser.driver).move_to_element(title).click(title).send_keys(
+                "  ".join([self.title, self.title_tags])).perform()
+            time.sleep(YOUTUBE_CONSTANT.USER_WAITING_TIME)
 
         desc = self.browser.find_elements_by_id(YOUTUBE_CONSTANT.TEXTBOX)[1]
         desc.clear()
         self.browser.driver.implicitly_wait(10)
-        ActionChains(self.browser.driver).move_to_element(desc).click(desc).send_keys(self.metadata_dict[self.account + '_description']).perform()
+        ActionChains(self.browser.driver).move_to_element(desc).click(desc).send_keys(self.description).perform()
 
         self.browser.driver.execute_script("window.scrollTo(150, 900);")
         time.sleep(YOUTUBE_CONSTANT.USER_WAITING_TIME)
@@ -99,7 +103,7 @@ class YouTubeUploaderLong:
         tags = self.browser.find_elements_by_id(YOUTUBE_CONSTANT.TAGS_INPUT)[1]
         tags.clear()
         self.browser.driver.implicitly_wait(10)
-        ActionChains(self.browser.driver).move_to_element(tags).click(tags).send_keys(self.metadata_dict[self.account + '_tag']).perform()
+        ActionChains(self.browser.driver).move_to_element(tags).click(tags).send_keys(self.tags).perform()
         time.sleep(YOUTUBE_CONSTANT.LONG_WAIT_TIME)
 
         # # 允许审查

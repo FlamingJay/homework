@@ -15,19 +15,16 @@ from ChromeDriver import ChromeDriver
 logging.basicConfig()
 
 
-def load_metadata(metadata_json_path: Optional[str] = None) -> DefaultDict[str, str]:
-    if metadata_json_path is None:
-        return defaultdict(str)
-    with open(metadata_json_path, encoding='utf-8') as metadata_json_file:
-        return defaultdict(str, json.load(metadata_json_file))
-
-
 class TiktokUploader:
-    def __init__(self, root_path: str, account: str, video_path: str, metadata_json_path: Optional[str] = None, thumbnail_path: Optional[str] = None) -> None:
+    def __init__(self, root_path: str, account: str, video_path: str, title: str, caption: str, description: str, tags: str, title_tags: str, use_file_title:str) -> None:
         self.account = account
         self.video_path = video_path
-        self.thumbnail_path = thumbnail_path
-        self.metadata_dict = load_metadata(metadata_json_path)
+        self.title = title
+        self.caption = caption
+        self.description = description
+        self.tags = tags
+        self.title_tags = title_tags
+        self.use_file_title = use_file_title == "true"
         current_working_dir = root_path
         self.browser = ChromeDriver(current_working_dir, current_working_dir)
         self.logger = logging.getLogger(__name__)
@@ -90,12 +87,15 @@ class TiktokUploader:
 
         caption = self.browser.find_element_by_xpath(TIKTOK_CONSTANT.Caption)
         self.browser.driver.implicitly_wait(10)
-        tags = self.metadata_dict[self.account + "_caption"].split("#")
         ActionChains(self.browser.driver).move_to_element(caption).click(caption).perform()
         time.sleep(1)
+        if self.use_file_title:
+            pass
+        else:
+            ActionChains(self.browser.driver).send_keys(self.caption).perform()
 
-        ActionChains(self.browser.driver).send_keys(tags[0]).perform()
-        for tag in tags[1:]:
+        tags = self.tags.split("#")
+        for tag in tags:
             ActionChains(self.browser.driver).send_keys("#" + tag.strip()).perform()
             time.sleep(2)
             ActionChains(self.browser.driver).send_keys(Keys.RETURN).perform()

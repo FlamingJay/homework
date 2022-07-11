@@ -3,14 +3,14 @@ from moviepy.video.io.VideoFileClip import VideoFileClip
 
 from qt.DownloadThread import DownloadThread
 from qt.EditorThread import EditorThread
-from qt.shortVideo2 import Ui_MainWindow
+from qt.shortVideo import Ui_MainWindow
 
 from qt.Params import *
 import json
 import sys
 import os
 
-from qt.AddAccount import AddAccount
+from qt.AccountDialog import AccountDialog
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
@@ -572,10 +572,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.merge_editor_thread.finished.connect(self.__reset_merge_params)
 
     def __account_add_row(self):
-        curRowCount = self.account_table.rowCount()
-        self.account_table.insertRow(curRowCount)
-        # todo: 弹出dialog，来填写信息，一键确认后直接存储。
-        self.add_dialog = AddAccount()
+        self.add_dialog = AccountDialog()
         self.add_dialog.show()
         self.add_dialog._end_signal.connect(self.__add_finished)
 
@@ -586,10 +583,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if confirm == QMessageBox.No:
             return
         account = self.account_table.item(curRow, 0).text()
+        web = self.account_table.item(curRow, 1).text()
+        video_type = self.account_table.item(curRow, 8).text()
+        file = "_".join([web, account, video_type]) + ".bat"
+
         self.account_table.removeRow(curRow)
         self.upload_parmas["accounts"].pop(account)
         # 更新json
         self.__rewrite_local_accounts_json()
+        # 删掉bat文件
+        if os.path.exists("./resource/" + file):
+            os.remove("./resource/" + file)
 
     def __load_local_accounts(self):
         if not os.path.exists("./resource/account_conf.json"):
@@ -619,7 +623,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             content = []
             for key in accounts[account]:
                 content.append("--" + key + " " + accounts[account][key])
-            content = " ".join(content)
+
+            content = " ".join([r"python E:\demo\homework\upload\AutoUpload.py --root E:\demo\homework\upload", " ".join(content)])
             with open("./resource/" + file_name + ".bat", "w", encoding="utf-8") as fwrite:
                 fwrite.write(content)
 
@@ -662,11 +667,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.upload_parmas["accounts"][account][Params.account_info[col]] = item
                 self.__rewrite_local_accounts_json()
         else:
-            row = self.account_table.currentRow()
-            col = self.account_table.currentColumn()
-            item = self.account_table.currentItem().text()
-            account = self.account_table.item(row, 0).text()
-            self.upload_parmas["accounts"][account][Params.account_info[col]] = item
+            pass
 
 
 

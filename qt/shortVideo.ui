@@ -40,9 +40,30 @@
        <height>131</height>
       </rect>
      </property>
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
      <property name="styleSheet">
       <string notr="true">color:rgb(0, 0, 0)</string>
      </property>
+     <property name="horizontalScrollMode">
+      <enum>QAbstractItemView::ScrollPerItem</enum>
+     </property>
+     <attribute name="horizontalHeaderCascadingSectionResizes">
+      <bool>false</bool>
+     </attribute>
+     <attribute name="horizontalHeaderHighlightSections">
+      <bool>false</bool>
+     </attribute>
+     <attribute name="horizontalHeaderShowSortIndicator" stdset="0">
+      <bool>false</bool>
+     </attribute>
+     <attribute name="horizontalHeaderStretchLastSection">
+      <bool>true</bool>
+     </attribute>
      <column>
       <property name="text">
        <string>account</string>
@@ -60,32 +81,37 @@
      </column>
      <column>
       <property name="text">
+       <string>description</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
        <string>caption</string>
       </property>
      </column>
      <column>
       <property name="text">
-       <string>desc</string>
+       <string>title_tags</string>
       </property>
      </column>
      <column>
       <property name="text">
-       <string>tag</string>
+       <string>tags</string>
       </property>
      </column>
      <column>
       <property name="text">
-       <string>视频目录</string>
+       <string>video_path</string>
       </property>
      </column>
      <column>
       <property name="text">
-       <string>视频类型</string>
+       <string>video_type</string>
       </property>
      </column>
      <column>
       <property name="text">
-       <string>默认标题</string>
+       <string>user_file_title</string>
       </property>
      </column>
     </widget>
