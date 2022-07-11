@@ -6,10 +6,11 @@ from qt.EditorThread import EditorThread
 from qt.shortVideo2 import Ui_MainWindow
 
 from qt.Params import *
-from collections import defaultdict
 import json
 import sys
 import os
+
+from qt.AddAccount import AddAccount
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
@@ -37,8 +38,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         # 进行展示当前账号
         self.upload_parmas["accounts"] = self.__load_local_accounts()
+        self.cell_changed = True
         self.account_table.itemChanged.connect(self.__table_update)
-        print("xx")
 
     def __init_btn_click(self):
         '''
@@ -574,9 +575,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         curRowCount = self.account_table.rowCount()
         self.account_table.insertRow(curRowCount)
         # todo: 弹出dialog，来填写信息，一键确认后直接存储。
-
-
-        self.__rewrite_local_accounts_json()
+        self.add_dialog = AddAccount()
+        self.add_dialog.show()
+        self.add_dialog._end_signal.connect(self.__add_finished)
 
     def __account_remove_row(self):
         curRow = self.account_table.currentRow()
@@ -584,7 +585,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         confirm = QMessageBox.warning(self.centralwidget, "请注意！", "您将要删掉该账号，后台数据也会被删除", QMessageBox.Yes | QMessageBox.No)
         if confirm == QMessageBox.No:
             return
-        account = self.account_table.item(curRow, 0)
+        account = self.account_table.item(curRow, 0).text()
         self.account_table.removeRow(curRow)
         self.upload_parmas["accounts"].pop(account)
         # 更新json
@@ -592,33 +593,75 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def __load_local_accounts(self):
         if not os.path.exists("./resource/account_conf.json"):
-            # todo: 考虑需不需要在这里新建文件
-            return defaultdict(str)
+            return dict()
 
         with open("./resource/account_conf.json", mode="r", encoding='utf-8') as meta_json:
-            # 在table中进行展示
             meta_dict = json.load(meta_json)
             for account in meta_dict.keys():
-                # 每一行
                 curRowCount = self.account_table.rowCount()
                 self.account_table.insertRow(curRowCount)
                 for idx, key in enumerate(Params.account_info):
                     if key in meta_dict[account].keys():
-                        # todo: 创建item，然后加入到table中进行展示
                         self.account_table.setItem(curRowCount, idx, QTableWidgetItem(meta_dict[account][key]))
                     else:
                         meta_dict[account][key] = ""
                         self.account_table.setItem(curRowCount, idx, QTableWidgetItem(""))
 
-            return defaultdict(str, meta_dict)
+            return meta_dict
 
     def __rewrite_local_accounts_json(self):
+        accounts = self.upload_parmas["accounts"]
         with open("./resource/account_conf.json", mode="w", encoding='utf-8') as file:
-            json.dump(file, self.upload_parmas["accounts"])
+            json.dump(accounts, file, indent=2)
+        # 生成一遍.bat文件
+        for account in accounts.keys():
+            file_name = "_".join([accounts[account]["web"], account, accounts[account]["video_type"]])
+            content = []
+            for key in accounts[account]:
+                content.append("--" + key + " " + accounts[account][key])
+            content = " ".join(content)
+            with open("./resource/" + file_name + ".bat", "w", encoding="utf-8") as fwrite:
+                fwrite.write(content)
+
+    def __add_finished(self, new_account):
+        if "account" not in new_account.keys():
+            return
+
+        account = new_account["account"]
+        # 判断是否已存在
+        if account in self.upload_parmas["accounts"].keys():
+            for row in range(self.account_table.rowCount()):
+                if self.account_table.item(row, 0).text() == account:
+                    curRowCount = row
+                    break
+        else:
+            curRowCount = self.account_table.rowCount()
+            self.account_table.insertRow(curRowCount)
+
+        self.cell_changed = False
+
+        self.upload_parmas["accounts"][account] = dict()
+        for idx, key in enumerate(Params.account_info):
+            if key in new_account.keys():
+                self.account_table.setItem(curRowCount, idx, QTableWidgetItem(new_account[key]))
+                self.upload_parmas["accounts"][account][key] = new_account[key]
+            else:
+                self.upload_parmas["accounts"][account][key] = ""
+                self.account_table.setItem(curRowCount, idx, QTableWidgetItem(""))
+
+        self.__rewrite_local_accounts_json()
 
     def __table_update(self):
-        changed = QMessageBox.warning(self.centralwidget, "提示", "账号信息会被修改", QMessageBox.Yes)
-        if changed == QMessageBox.Yes:
+        if self.cell_changed:
+            changed = QMessageBox.warning(self.centralwidget, "提示", "账号信息会被修改", QMessageBox.Yes)
+            if changed == QMessageBox.Yes:
+                row = self.account_table.currentRow()
+                col = self.account_table.currentColumn()
+                item = self.account_table.currentItem().text()
+                account = self.account_table.item(row, 0).text()
+                self.upload_parmas["accounts"][account][Params.account_info[col]] = item
+                self.__rewrite_local_accounts_json()
+        else:
             row = self.account_table.currentRow()
             col = self.account_table.currentColumn()
             item = self.account_table.currentItem().text()

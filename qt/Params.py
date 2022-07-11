@@ -9,6 +9,6 @@ class Params:
 
     merge_editor_keys = ["merge_ready_videos", "merge_del_videos", "merge_save_path", "merge_type", "total_duration", "merge_video_duration", "merge_top10_path"]
 
-    upload_keys = []
+    upload_keys = ["add_finished"]
 
     account_info = ["account", "web", "title", "caption", "description", "tags", "video_path", "video_type", "default_title"]

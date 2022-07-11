@@ -1,0 +1,35 @@
+{
+  "jie": {
+    "account": "jie",
+    "web": "youtube",
+    "title": "this is Youtube title",
+    "caption": "dadada",
+    "description": "this is TikTok desc",
+    "tags": "animal,funny,",
+    "video_path": "e:/eead",
+    "video_type": "\u77ed",
+    "default_title": "\u5426"
+  },
+  "emily": {
+    "account": "emily",
+    "web": "tiktok",
+    "title": "this is Youtube title",
+    "caption": "dadada",
+    "description": "this is TikTok desc",
+    "tags": "animal,funny,",
+    "video_path": "e:/eead",
+    "video_type": "\u77ed",
+    "default_title": "\u5426"
+  },
+  "new2": {
+    "account": "new2",
+    "web": "tiktok",
+    "title": "nihaoya ",
+    "caption": "woyebuzhidao",
+    "description": "",
+    "tags": "",
+    "video_path": "",
+    "video_type": "",
+    "default_title": ""
+  }
+}
