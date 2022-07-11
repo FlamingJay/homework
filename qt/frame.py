@@ -1,11 +1,14 @@
-from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QListWidgetItem
+from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QListWidgetItem, QMessageBox, QTableWidgetItem
 from moviepy.video.io.VideoFileClip import VideoFileClip
 
 from qt.DownloadThread import DownloadThread
 from qt.EditorThread import EditorThread
-from shortVideo2 import Ui_MainWindow
+from qt.shortVideo2 import Ui_MainWindow
+
+from qt.Params import *
+from collections import defaultdict
+import json
 import sys
-from Params import *
 import os
 
 
@@ -32,6 +35,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         for key in Params.upload_keys:
             self.upload_parmas[key] = None
 
+        # 进行展示当前账号
+        self.upload_parmas["accounts"] = self.__load_local_accounts()
+        self.account_table.itemChanged.connect(self.__table_update)
+        print("xx")
+
     def __init_btn_click(self):
         '''
         对btn的信号槽进行关联
@@ -40,6 +48,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # ------------- 下载相关  ----------------------
         # 确认网址
         self.web_confirm_btn.clicked.connect(self.__confirm_web)
+        self.input_home_url.editingFinished.connect(
+            lambda: self.__line_edit_change("download", "home_page_url", self.input_home_url.text()))
         self.is_english_title.clicked.connect(self.__translate_to_english)
         self.download_save_btn.clicked.connect(lambda: self.__select_save_path("download", "save_path"))
         self.download_btn.clicked.connect(self.__download_thread)
@@ -65,8 +75,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.add_merge_btn.clicked.connect(self.__merge_add_row)
         self.delete_merge_btn.clicked.connect(self.__merge_remove_row)
         self.select_save_path_merge_btn.clicked.connect(lambda: self.__select_save_path("editor", "merge_save_path"))
-
         self.run_merge_btn.clicked.connect(self.__run_merge_editor)
+
+        # ------------- 账号管理相关  -----------------
+        self.add_account_btn.clicked.connect(self.__account_add_row)
+        self.delete_account_btn.clicked.connect(self.__account_remove_row)
 
     def __line_edit_change(self, module, key, val):
         '''
@@ -488,6 +501,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 files = [file for file in files if "mp4" in file]
                 if len(files) != 12:
                     # todo: 数量提示：top10 + 开场 + 结尾
+                    QMessageBox.critical(self.centralwidget, "错误", "top10转场素材不是12个(top10 + 开场 + 结尾)")
                     return
                 files.sort(reverse=True)
                 self.editor_parmas["merge_top10_path"] = []
@@ -523,9 +537,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if self.editor_parmas["merge_type"] == "top10":
             if len(self.editor_parmas["merge_ready_videos"]) < 10:
                 # todo: 提示数量小于10
+                QMessageBox.critical(self.centralwidget, "错误", "视频数不足10个")
                 return
             elif len(self.editor_parmas["merge_ready_videos"]) > 10:
                 # todo: 提示数量大于10
+                QMessageBox.critical(self.centralwidget, "错误", "视频数超过10个")
                 return
             else:
                 final_merge_videos.append(self.editor_parmas["merge_top10_path"][-2])
@@ -553,6 +569,62 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.merge_editor_thread.start()
         self.run_merge_btn.setEnabled(False)
         self.merge_editor_thread.finished.connect(self.__reset_merge_params)
+
+    def __account_add_row(self):
+        curRowCount = self.account_table.rowCount()
+        self.account_table.insertRow(curRowCount)
+        # todo: 弹出dialog，来填写信息，一键确认后直接存储。
+
+
+        self.__rewrite_local_accounts_json()
+
+    def __account_remove_row(self):
+        curRow = self.account_table.currentRow()
+
+        confirm = QMessageBox.warning(self.centralwidget, "请注意！", "您将要删掉该账号，后台数据也会被删除", QMessageBox.Yes | QMessageBox.No)
+        if confirm == QMessageBox.No:
+            return
+        account = self.account_table.item(curRow, 0)
+        self.account_table.removeRow(curRow)
+        self.upload_parmas["accounts"].pop(account)
+        # 更新json
+        self.__rewrite_local_accounts_json()
+
+    def __load_local_accounts(self):
+        if not os.path.exists("./resource/account_conf.json"):
+            # todo: 考虑需不需要在这里新建文件
+            return defaultdict(str)
+
+        with open("./resource/account_conf.json", mode="r", encoding='utf-8') as meta_json:
+            # 在table中进行展示
+            meta_dict = json.load(meta_json)
+            for account in meta_dict.keys():
+                # 每一行
+                curRowCount = self.account_table.rowCount()
+                self.account_table.insertRow(curRowCount)
+                for idx, key in enumerate(Params.account_info):
+                    if key in meta_dict[account].keys():
+                        # todo: 创建item，然后加入到table中进行展示
+                        self.account_table.setItem(curRowCount, idx, QTableWidgetItem(meta_dict[account][key]))
+                    else:
+                        meta_dict[account][key] = ""
+                        self.account_table.setItem(curRowCount, idx, QTableWidgetItem(""))
+
+            return defaultdict(str, meta_dict)
+
+    def __rewrite_local_accounts_json(self):
+        with open("./resource/account_conf.json", mode="w", encoding='utf-8') as file:
+            json.dump(file, self.upload_parmas["accounts"])
+
+    def __table_update(self):
+        changed = QMessageBox.warning(self.centralwidget, "提示", "账号信息会被修改", QMessageBox.Yes)
+        if changed == QMessageBox.Yes:
+            row = self.account_table.currentRow()
+            col = self.account_table.currentColumn()
+            item = self.account_table.currentItem().text()
+            account = self.account_table.item(row, 0).text()
+            self.upload_parmas["accounts"][account][Params.account_info[col]] = item
+
 
 
 if __name__ == "__main__":
