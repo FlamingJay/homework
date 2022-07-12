@@ -1,7 +1,7 @@
 from moviepy.video.io.VideoFileClip import VideoFileClip
 from moviepy.editor import concatenate_videoclips, afx, AudioFileClip, ImageClip, CompositeVideoClip, CompositeAudioClip
 import datetime
-from qt.AutoEditor import AutoEditor
+from editor.AutoEditor import AutoEditor
 import os
 import sys
 

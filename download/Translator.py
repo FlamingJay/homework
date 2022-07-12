@@ -2,6 +2,7 @@ import re
 import hashlib
 import random
 import requests
+from importlib import resources
 
 
 def word_replace(text, word_dict):
@@ -15,7 +16,7 @@ def word_replace(text, word_dict):
 
 def load_word_dict():
     word_dict = dict()
-    with open("./resource/word_dict.txt", "r", encoding='utf-8') as f:
+    with resources.open_text("resource", "word_dict.txt") as f:
         for line in f.readlines():
             token = line.split("|")
             word_dict[token[0]] = token[1]
@@ -57,7 +58,7 @@ def baiduAPI_translate(query_str, from_lang, to_lang):
         if 'trans_result' in result_dict:
             res = result_dict['trans_result'][0]['dst']
             # 过滤
-            res = re.sub(r'[\\/:*?<>？]', r'.', res)[0: min(len(res), 250)]
+            res = re.sub(r'[\\/:*?<>？]', r'../qt', res)[0: min(len(res), 250)]
             return res
         else:
             return query_str

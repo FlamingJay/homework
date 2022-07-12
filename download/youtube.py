@@ -2,12 +2,11 @@ import os
 from pytube import YouTube
 from abc import ABC
 import re
-import time
 import urllib.request
 import urllib.error
 
-from AutoDownLoader import AutoDownLoader
-import Translator
+from download.AutoDownLoader import AutoDownLoader
+from download import Translator
 
 
 class YoutubeDownloader(AutoDownLoader, ABC):

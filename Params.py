@@ -12,3 +12,5 @@ class Params:
     upload_keys = ["add_finished"]
 
     account_info = ["account", "web", "title", "caption", "description", "tags", "title_tags", "video_path", "video_type", "use_file_title"]
+
+    bat_info = ["account", "web", "meta", "video_path", "video_type", "use_file_title"]

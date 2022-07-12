@@ -6,8 +6,8 @@ import requests
 from abc import ABC
 from contextlib import closing
 
-from AutoDownLoader import AutoDownLoader
-import Translator
+from download.AutoDownLoader import AutoDownLoader
+from download import Translator
 
 
 class DouyinDownloader(AutoDownLoader, ABC):

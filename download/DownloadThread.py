@@ -1,6 +1,6 @@
-from PyQt5.QtCore import QObject, QThread, pyqtSignal
-from douyin import DouyinDownloader
-from youtube import YoutubeDownloader
+from PyQt5.QtCore import QThread, pyqtSignal
+from download.douyin import DouyinDownloader
+from download.youtube import YoutubeDownloader
 import os
 
 class DownloadThread(QThread):

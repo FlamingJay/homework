@@ -1,6 +1,5 @@
-from moviepy.video.io.VideoFileClip import VideoFileClip
-from VideoProcess import single_process
-from qt.AutoEditor import AutoEditor
+from editor.VideoProcess import single_process
+from editor.AutoEditor import AutoEditor
 import multiprocessing
 
 class SingleEditor(AutoEditor):

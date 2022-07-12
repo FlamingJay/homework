@@ -1,11 +1,7 @@
-import time
+from PyQt5.QtCore import QThread, pyqtSignal
 
-from PyQt5.QtCore import QObject, QThread, pyqtSignal
-
-import os
-
-from qt.MergeEditor import MergeEditor
-from qt.SingleEditor import SingleEditor
+from editor.MergeEditor import MergeEditor
+from editor.SingleEditor import SingleEditor
 
 
 class EditorThread(QThread):

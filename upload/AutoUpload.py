@@ -1,4 +1,5 @@
 #-*- coding: utf-8 -*-
+import json
 import os
 import argparse
 from YouTubeUploaderShort import YouTubeUploaderShort
@@ -51,15 +52,7 @@ if __name__ == "__main__":
 
     parser.add_argument("--web", help='web', required=True)
 
-    parser.add_argument("--title", help='title', required=False)
-
-    parser.add_argument("--caption", help="caption", required=False)
-
-    parser.add_argument("--description", help="description", required=False)
-
-    parser.add_argument("--tags", help='tags', required=False)
-
-    parser.add_argument("--title_tags", help='tags', required=False)
+    parser.add_argument("--meta", help='meta', required=True)
 
     parser.add_argument("--video_path", help='Path to the video file', required=True)
 
@@ -68,34 +61,47 @@ if __name__ == "__main__":
     parser.add_argument("--use_file_title", help="use_file_title", required=True)
 
     args = parser.parse_args()
+
+    # 解析参数
+    accounts = dict()
+    root = os.path.abspath(os.path.join(os.getcwd(), ".."))
+    with open(root + os.sep + "resource" + os.sep + args.meta) as f:
+        accounts = json.load(f)
+
+    title = accounts[args.account]["title"]
+    caption = accounts[args.account]["caption"]
+    description = accounts[args.account]["description"]
+    tags = accounts[args.account]["tags"]
+    title_tags = accounts[args.account]["title_tags"]
+
     if args.web == "youtube":
-        hist_path = args.root + "\\youtube_" + args.account + ".txt"
+        hist_path = root + os.sep + "resource" + os.sep + "_".join([args.web, args.account, args.video_type]) + ".txt"
         target = pick_video(hist_path, args.video_path)
         if target is not "":
             if args.video_type == "short":
                 print("short")
                 uploader = YouTubeUploaderShort(root_path=args.root,
                                             account=args.account,
-                                            video_path=args.video_path + "/" + target,
-                                            title=args.title,
-                                            caption = args.caption,
-                                            description=args.description,
-                                            tags=args.tags,
-                                            title_tags=args.title_tags,
+                                            video_path=args.video_path + os.sep + target,
+                                            title=title,
+                                            caption=caption,
+                                            description=description,
+                                            tags=tags,
+                                            title_tags=title_tags,
                                             use_file_title=args.use_file_title
                                            )
                 uploader.upload()
             elif args.video_type == "long":
                 print("long")
                 uploader = YouTubeUploaderLong(root_path=args.root,
-                                                account=args.account,
-                                                video_path=args.video_path + "/" + target,
-                                                title=args.title,
-                                                caption=args.caption,
-                                                description=args.description,
-                                                tags=args.tags,
-                                                title_tags=args.title_tags,
-                                                use_file_title=args.use_file_title
+                                               account=args.account,
+                                               video_path=args.video_path + os.sep + target,
+                                               title=title,
+                                               caption=caption,
+                                               description=description,
+                                               tags=tags,
+                                               title_tags=title_tags,
+                                               use_file_title=args.use_file_title
                                            )
                 print("ready to upload")
                 uploader.upload()
@@ -107,12 +113,12 @@ if __name__ == "__main__":
         if target is not "":
             uploader = TiktokUploader(root_path=args.root,
                                       account=args.account,
-                                      video_path=args.video_path + "/" + target,
-                                      title=args.title,
-                                      caption=args.caption,
-                                      description=args.description,
-                                      tags=args.tags,
-                                      title_tags=args.title_tags,
+                                      video_path=args.video_path + os.sep + target,
+                                      title=title,
+                                      caption=caption,
+                                      description=description,
+                                      tags=tags,
+                                      title_tags=title_tags,
                                       use_file_title=args.use_file_title
                                       )
             uploader.upload()

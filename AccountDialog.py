@@ -8,6 +8,7 @@ import os
 
 class AccountDialog(QDialog, Ui_Dialog):
     _end_signal = pyqtSignal(dict)
+
     def __init__(self, parent=None):
         super(AccountDialog, self).__init__(parent)
         self.setupUi(self)
@@ -19,11 +20,11 @@ class AccountDialog(QDialog, Ui_Dialog):
         加载本地的账号文件
         :return:
         '''
-        if not os.path.exists("./resource/account_conf.json"):
+        if not os.path.exists("resource/account_conf.json"):
             # todo: 考虑需不需要在这里新建文件
             return dict()
 
-        with open("./resource/account_conf.json", mode="r", encoding='utf-8') as meta_json:
+        with open("resource/account_conf.json", mode="r", encoding='utf-8') as meta_json:
             # 在table中进行展示
             meta_dict = json.load(meta_json)
 
@@ -54,7 +55,7 @@ class AccountDialog(QDialog, Ui_Dialog):
         else:
             # 不希望被覆盖
             if res["account"] in self.accounts.keys():
-                is_covered = QMessageBox.warning(self, "提示", "该账号已存在，是否覆盖",  QMessageBox.No | QMessageBox.Yes)
+                is_covered = QMessageBox.warning(self, "提示", "该账号已存在，是否覆盖", QMessageBox.No | QMessageBox.Yes)
                 if is_covered == QMessageBox.No:
                     success = False
 

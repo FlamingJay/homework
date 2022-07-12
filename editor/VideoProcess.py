@@ -1,7 +1,6 @@
 from moviepy.video.io.VideoFileClip import VideoFileClip
 from moviepy.editor import afx, AudioFileClip, ImageClip, CompositeVideoClip, CompositeAudioClip
 import moviepy.video.fx.all as vfx
-from moviepy.audio.fx.volumex import volumex
 import os, sys
 
 
@@ -74,6 +73,6 @@ def single_process(args):
         video = CompositeVideoClip([video, water_clip])
 
     if save_path is not None:
-        video.write_videofile(save_path + "\\" + name)
+        video.write_videofile(save_path + name)
     else:
         video.write_videofile(os.path.dirname(sys.executable) + "\\" + name)

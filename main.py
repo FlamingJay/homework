@@ -1,16 +1,16 @@
 from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QListWidgetItem, QMessageBox, QTableWidgetItem
 from moviepy.video.io.VideoFileClip import VideoFileClip
 
-from qt.DownloadThread import DownloadThread
-from qt.EditorThread import EditorThread
-from qt.shortVideo import Ui_MainWindow
+from download.DownloadThread import DownloadThread
+from editor.EditorThread import EditorThread
+from shortVideo import Ui_MainWindow
 
-from qt.Params import *
+from Params import *
 import json
 import sys
 import os
 
-from qt.AccountDialog import AccountDialog
+from AccountDialog import AccountDialog
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
@@ -38,6 +38,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         # 进行展示当前账号
         self.upload_parmas["accounts"] = self.__load_local_accounts()
+        # 若单元格修改，则进行提示；否则不提示
         self.cell_changed = True
         self.account_table.itemChanged.connect(self.__table_update)
 
@@ -490,6 +491,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             return
 
     def __select_merge_type(self):
+        '''
+        选择合集类型
+        :return:
+        '''
         sender = self.sender()
         if sender == self.merge_type_btn_group:
             if self.merge_type_btn_group.checkedId() == 11:
@@ -512,6 +517,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.editor_parmas["merge_type"] = 'normal'
 
     def __reset_merge_params(self):
+        '''
+        重置合集相关参数
+        :return:
+        '''
         for param in Params.merge_editor_keys:
             self.editor_parmas[param] = None
         self.merge_video_list.clear()
@@ -572,11 +581,19 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.merge_editor_thread.finished.connect(self.__reset_merge_params)
 
     def __account_add_row(self):
+        '''
+        添加一行新的账号
+        :return:
+        '''
         self.add_dialog = AccountDialog()
         self.add_dialog.show()
         self.add_dialog._end_signal.connect(self.__add_finished)
 
     def __account_remove_row(self):
+        '''
+        删掉一行账号
+        :return:
+        '''
         curRow = self.account_table.currentRow()
 
         confirm = QMessageBox.warning(self.centralwidget, "请注意！", "您将要删掉该账号，后台数据也会被删除", QMessageBox.Yes | QMessageBox.No)
@@ -596,10 +613,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             os.remove("./resource/" + file)
 
     def __load_local_accounts(self):
-        if not os.path.exists("./resource/account_conf.json"):
+        '''
+        加载本地的账号文件
+        :return:
+        '''
+        if not os.path.exists("resource/account_conf.json"):
             return dict()
 
-        with open("./resource/account_conf.json", mode="r", encoding='utf-8') as meta_json:
+        with open("resource/account_conf.json", mode="r", encoding='utf-8') as meta_json:
             meta_dict = json.load(meta_json)
             for account in meta_dict.keys():
                 curRowCount = self.account_table.rowCount()
@@ -614,21 +635,35 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             return meta_dict
 
     def __rewrite_local_accounts_json(self):
+        '''
+        重写账号文件，并生成bat文件
+        :return:
+        '''
         accounts = self.upload_parmas["accounts"]
-        with open("./resource/account_conf.json", mode="w", encoding='utf-8') as file:
+        with open("resource/account_conf.json", mode="w", encoding='utf-8') as file:
             json.dump(accounts, file, indent=2)
         # 生成一遍.bat文件
+        file = os.getcwd() + os.sep + "upload" + os.sep + "AutoUpload.py"
+        root = os.getcwd() + os.sep + "upload"
         for account in accounts.keys():
             file_name = "_".join([accounts[account]["web"], account, accounts[account]["video_type"]])
             content = []
-            for key in accounts[account]:
-                content.append("--" + key + " " + accounts[account][key])
+            for key in Params.bat_info:
+                if key == "meta":
+                    content.append("--" + key + " " + "account_conf.json")
+                else:
+                    content.append("--" + key + " " + accounts[account][key])
 
-            content = " ".join([r"python E:\demo\homework\upload\AutoUpload.py --root E:\demo\homework\upload", " ".join(content)])
+            content = " ".join([r"python " + file, "--root " + root, " ".join(content)])
             with open("./resource/" + file_name + ".bat", "w", encoding="utf-8") as fwrite:
                 fwrite.write(content)
 
     def __add_finished(self, new_account):
+        '''
+        信号槽：收到完成账号注册的信息，并将注册信息进行添加
+        :param new_account:
+        :return:
+        '''
         if "account" not in new_account.keys():
             return
 
@@ -655,8 +690,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.account_table.setItem(curRowCount, idx, QTableWidgetItem(""))
 
         self.__rewrite_local_accounts_json()
+        self.cell_changed = True
 
     def __table_update(self):
+        '''
+        信号槽：表格发生变化时
+        :return:
+        '''
         if self.cell_changed:
             changed = QMessageBox.warning(self.centralwidget, "提示", "账号信息会被修改", QMessageBox.Yes)
             if changed == QMessageBox.Yes:
@@ -668,7 +708,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.__rewrite_local_accounts_json()
         else:
             pass
-
 
 
 if __name__ == "__main__":
