@@ -46,7 +46,6 @@ def add_hist(path, name):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--root", help='Path to the code file', required=True)
 
     parser.add_argument("--account", help='account', required=True)
 
@@ -73,14 +72,15 @@ if __name__ == "__main__":
     description = accounts[args.account]["description"]
     tags = accounts[args.account]["tags"]
     title_tags = accounts[args.account]["title_tags"]
+    resources = root + os.sep + "resource"
 
     if args.web == "youtube":
-        hist_path = root + os.sep + "resource" + os.sep + "_".join([args.web, args.account, args.video_type]) + ".txt"
+        hist_path = resources + os.sep + "_".join([args.web, args.account, args.video_type]) + ".txt"
         target = pick_video(hist_path, args.video_path)
         if target is not "":
             if args.video_type == "short":
                 print("short")
-                uploader = YouTubeUploaderShort(root_path=args.root,
+                uploader = YouTubeUploaderShort(pkl_path=resources,
                                             account=args.account,
                                             video_path=args.video_path + os.sep + target,
                                             title=title,
@@ -93,7 +93,7 @@ if __name__ == "__main__":
                 uploader.upload()
             elif args.video_type == "long":
                 print("long")
-                uploader = YouTubeUploaderLong(root_path=args.root,
+                uploader = YouTubeUploaderLong(pkl_path=resources,
                                                account=args.account,
                                                video_path=args.video_path + os.sep + target,
                                                title=title,
@@ -107,11 +107,11 @@ if __name__ == "__main__":
                 uploader.upload()
         add_hist(hist_path, target)
     elif args.web == "tiktok":
-        hist_path = args.root + "\\tiktok_" + args.account + ".txt"
+        hist_path = resources + os.sep + "tiktok_" + args.account + ".txt"
         target = pick_video(hist_path, args.video_path)
 
         if target is not "":
-            uploader = TiktokUploader(root_path=args.root,
+            uploader = TiktokUploader(pkl_path=resources,
                                       account=args.account,
                                       video_path=args.video_path + os.sep + target,
                                       title=title,

@@ -54,8 +54,12 @@ class DouyinDownloader(AutoDownLoader, ABC):
                 else:
                     sec_id_url = "https://www.iesdouyin.com/web/api/v2/aweme/post/?sec_uid={0}&count=21&max_cursor={1}&aid=1128&_signature=dF8skQAAK0iTKNSXi9av.XRfLI&dytk=".format(
                         sec_uid[0], max_cursor)
-                sec_respone = session.get(url=sec_id_url, headers=self.headers, verify=False)
-                comment = sec_respone.json()
+                try:
+                    sec_respone = session.get(url=sec_id_url, headers=self.headers, verify=False)
+                    comment = sec_respone.json()
+                except:
+                    break
+
                 if len(comment['aweme_list']) == 0:
                     continue
                 else:
@@ -64,20 +68,24 @@ class DouyinDownloader(AutoDownLoader, ABC):
             max_cursor = comment['max_cursor']
             for s in comment['aweme_list']:
                 index += 1
-                # 无水印视频链接地址
-                video_url = s['video']['play_addr_lowbr']['url_list'][0]
-                # 视频名称
-                video_name = re.sub(r'[\/:*?"<>|\n]', '', s['desc'])
-                if translate_to_english:
-                    try:
-                        time.sleep(1)
-                        video_name = Translator.word_replace(video_name, word_dict)
-                        video_name = Translator.baiduAPI_translate(query_str=video_name, from_lang='zh',
-                                                                                  to_lang='en')
 
-                    except:
-                        video_name = video_name
-                parsed_urls_names.append([video_url, video_name])
+                if 'video' in s.keys():
+                    if 'play_addr_lowbr' in s['video'].keys():
+                        if 'url_list' in s['video']['play_addr_lowbr'].keys():
+                            # 无水印视频链接地址
+                            video_url = s['video']['play_addr_lowbr']['url_list'][0]
+                            # 视频名称
+                            video_name = re.sub(r'[\/:*?"<>|\n]', '', s['desc'])
+                            if translate_to_english:
+                                try:
+                                    time.sleep(1)
+                                    video_name = Translator.word_replace(video_name, word_dict)
+                                    video_name = Translator.baiduAPI_translate(query_str=video_name, from_lang='zh',
+                                                                                              to_lang='en')
+
+                                except:
+                                    video_name = video_name
+                            parsed_urls_names.append([video_url, video_name])
 
             if int(index) >= int(sm_count[0]):
                 break

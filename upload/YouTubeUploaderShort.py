@@ -11,7 +11,7 @@ logging.basicConfig()
 
 
 class YouTubeUploaderShort:
-    def __init__(self, root_path: str, account: str, video_path: str, title: str, caption: str, description: str, tags: str, title_tags: str, use_file_title:str) -> None:
+    def __init__(self, pkl_path: str, account: str, video_path: str, title: str, caption: str, description: str, tags: str, title_tags: str, use_file_title:str) -> None:
         self.account = account
         self.video_path = video_path
         self.title = title
@@ -20,7 +20,7 @@ class YouTubeUploaderShort:
         self.tags = tags
         self.title_tags = title_tags
         self.use_file_title = use_file_title == "true"
-        current_working_dir = root_path
+        current_working_dir = pkl_path
         self.browser = ChromeDriver(current_working_dir, current_working_dir)
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(logging.DEBUG)
