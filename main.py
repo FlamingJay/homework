@@ -59,6 +59,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         # ------------- 视频剪辑公共部分  ----------------
         self.select_background_pic_btn.clicked.connect(lambda: self.__select_file("editor", "background_pic"))
+        # todo: 背景图可用比例，默认为1
         self.select_background_music_btn.clicked.connect(lambda: self.__select_file("editor", "background_music"))
         self.select_water_logo_btn.clicked.connect(lambda: self.__select_file("editor", "water_logo"))
         self.is_music_covered.clicked.connect(self.__cover_music)
@@ -66,6 +67,20 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # ------------- 单视频剪辑相关  -----------------
         self.select_single_source_path_btn.clicked.connect(
             lambda: self.__select_source_path("editor", "single_source_path"))
+
+        self.input_start_x.editingFinished.connect(
+            lambda: self.__line_edit_change("editor", "input_start_x", self.input_start_x.text()))
+        self.input_start_y.editingFinished.connect(
+            lambda: self.__line_edit_change("editor", "input_start_y", self.input_start_y.text()))
+        self.input_end_x.editingFinished.connect(
+            lambda: self.__line_edit_change("editor", "input_end_x", self.input_end_x.text()))
+        self.input_end_y.editingFinished.connect(
+            lambda: self.__line_edit_change("editor", "input_end_y", self.input_end_y.text()))
+        self.input_front_second.editingFinished.connect(
+            lambda: self.__line_edit_change("editor", "front_cut_dur", self.input_front_second.text()))
+        self.input_end_second.editingFinished.connect(
+            lambda: self.__line_edit_change("editor", "end_cut_dur", self.input_end_second.text()))
+
         self.select_save_path_single_btn.clicked.connect(lambda: self.__select_save_path("editor", "single_save_path"))
         self.run_single_btn.clicked.connect(self.__run_single_editor)
         self.add_single_btn.clicked.connect(self.__single_add_row)
@@ -259,7 +274,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def __show_list(self, show_items):
         '''
-        todo：看看有什么可以用的
         :param show_items:
         :return:
         '''
@@ -362,8 +376,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         output_path = self.editor_parmas["single_save_path"]
 
         self.single_editor_thread = EditorThread("single", single_ready_videos, background_pic, background_audio,
-                                                 volume,
-                                                 original_autio_off, water_logo, output_path, self.editor_parmas)
+                                                 volume, original_autio_off, water_logo, output_path, self.editor_parmas)
 
         # list展示
         self.single_editor_thread._signal.connect(self.__show_list)
@@ -561,7 +574,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 final_merge_videos.append(self.editor_parmas["merge_top10_path"][-1])
         else:
             final_merge_videos = merge_ready_videos
-
 
         background_pic = self.editor_parmas["background_pic"]
         background_audio = self.editor_parmas["background_music"]

@@ -2,6 +2,8 @@ from PyQt5.QtWidgets import QDialog, QMessageBox
 from PyQt5.QtCore import pyqtSignal
 from add_account import Ui_Dialog
 
+from Params import Params
+
 import json
 import os
 
@@ -21,7 +23,6 @@ class AccountDialog(QDialog, Ui_Dialog):
         :return:
         '''
         if not os.path.exists("resource/account_conf.json"):
-            # todo: 考虑需不需要在这里新建文件
             return dict()
 
         with open("resource/account_conf.json", mode="r", encoding='utf-8') as meta_json:
@@ -51,6 +52,9 @@ class AccountDialog(QDialog, Ui_Dialog):
         # 没有account
         if "account" not in res.keys() or "web" not in res.keys() or res["account"] == "":
             QMessageBox.warning(self, "提示", "需要填写账号&web", QMessageBox.Yes)
+            success = False
+        elif any(char in res['account'] and char for char in Params.file_name_black_char):
+            QMessageBox.warning(self, "提示", "账号名中不要包含特殊字符*|等", QMessageBox.Yes)
             success = False
         else:
             # 不希望被覆盖

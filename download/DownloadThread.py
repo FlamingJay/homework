@@ -37,6 +37,7 @@ class DownloadThread(QThread):
             return
 
         # 解析
+        # todo: 使用QMovie做动态等待窗口
         nickname, parsed_urls_names = self.autoloader.parseUrl(self.target_link, self.translate_to_english)
         video_count = len(parsed_urls_names)
         # 保存路径

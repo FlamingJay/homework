@@ -7,7 +7,7 @@ import sys
 
 class MergeEditor(AutoEditor):
     def __init__(self, background_pic=None, background_music=None, volume=None, is_covered_music=None, water_logo=None,
-                 save_path=None, time_cut_params=None, crop_params=None):
+                 save_path=None):
         super(MergeEditor, self).__init__()
         self.background_pic = background_pic
         self.background_audio = background_music
@@ -15,13 +15,14 @@ class MergeEditor(AutoEditor):
         self.original_autio_off = is_covered_music
         self.water_logo = water_logo
         self.output_path = save_path
-        self.time_cut_params = time_cut_params
-        self.crop_params = crop_params
-        
-    def prepare_videos(self, video_path):
-        pass
+
     
     def videos_edit(self, video_list):
+        '''
+        视频合集制作
+        :param video_list: 要合成的单个视频列表
+        :return:
+        '''
         videos = []
         for item in video_list:
             videos.append(VideoFileClip(item))
@@ -44,7 +45,6 @@ class MergeEditor(AutoEditor):
             if back_size[0] > back_size[1]:
                 new_height = 1080 * 0.946
                 new_width = new_height * all_videos.size[0] / all_videos.size[1]
-                new_height = new_height
             else:
                 new_width = 1080 * 0.946
                 new_height = new_width * all_videos.size[1] / all_videos.size[0]
@@ -82,7 +82,6 @@ class MergeEditor(AutoEditor):
 
         # 写入
         cur_time = datetime.date.today()
-        # 加弹窗
         if self.output_path is not None:
             all_videos.write_videofile(self.output_path + "/" + str(cur_time) + ".mp4")
         else:
