@@ -1,5 +1,6 @@
-from PyQt5.QtCore import QThread, pyqtSignal
+from PyQt5.QtCore import QThread
 
+from ui.LoadingDialog import LoadingDialog
 from editor.MergeEditor import MergeEditor
 from editor.SingleEditor import SingleEditor
 
@@ -34,6 +35,7 @@ class EditorThread(QThread):
 
     def run(self) -> None:
         # todo:弹窗：正在剪辑  使用QMovie
-
+        self.loading_dialog = LoadingDialog(mode="loading")
         self.editor.videos_edit(self.source_videos_list)
         # todo：弹窗：剪辑完成
+        self.loading_dialog.close()

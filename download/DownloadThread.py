@@ -1,4 +1,6 @@
 from PyQt5.QtCore import QThread, pyqtSignal
+
+from ui.LoadingDialog import LoadingDialog
 from download.douyin import DouyinDownloader
 from download.youtube import YoutubeDownloader
 import os
@@ -38,7 +40,9 @@ class DownloadThread(QThread):
 
         # 解析
         # todo: 使用QMovie做动态等待窗口
+        self.loading_dialog = LoadingDialog(mode="loading")
         nickname, parsed_urls_names = self.autoloader.parseUrl(self.target_link, self.translate_to_english)
+        self.loading_dialog.close()
         video_count = len(parsed_urls_names)
         # 保存路径
         nickname_dir = os.path.join(self.save_path, nickname)

@@ -3,16 +3,17 @@ from moviepy.video.io.VideoFileClip import VideoFileClip
 
 from download.DownloadThread import DownloadThread
 from editor.EditorThread import EditorThread
-from double_page import Ui_MainWindow
+from ui.double_page import Ui_MainWindow
 
 from Params import *
 import json
 import sys
 import os
 
-from AccountDialog import AccountDialog
-from TableCellDialog import TableCellDialog
-from LoadingDialog import LoadingDialog
+from ui.AccountDialog import AccountDialog
+from ui.TextCellDialog import TableCellDialog
+from ui.ComboxDialog import ComboxDialog
+
 
 class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self, parent=None):
@@ -596,8 +597,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         添加一行新的账号
         :return:
         '''
-        self.loading_dialog = LoadingDialog()
-
         self.add_dialog = AccountDialog()
         self.add_dialog.show()
         self.add_dialog._end_signal.connect(self.__add_finished)
@@ -641,6 +640,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 curRowCount = self.account_table.rowCount()
                 self.account_table.insertRow(curRowCount)
                 for idx, key in enumerate(Params.account_info):
+
+
                     if key in meta_dict[account].keys():
                         self.account_table.setItem(curRowCount, idx, QTableWidgetItem(meta_dict[account][key]))
                     else:
@@ -683,7 +684,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             return
 
         account = new_account["account"]
-        # 判断是否已存在
+        # 判断是否已存在:todo 这块的逻辑是否有必要？
         if account in self.upload_parmas["accounts"].keys():
             for row in range(self.account_table.rowCount()):
                 if self.account_table.item(row, 0).text() == account:
@@ -695,32 +696,42 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.upload_parmas["accounts"][account] = dict()
         for idx, key in enumerate(Params.account_info):
-            if key in new_account.keys():
-                self.account_table.setItem(curRowCount, idx, QTableWidgetItem(new_account[key]))
-                self.upload_parmas["accounts"][account][key] = new_account[key]
-            else:
-                self.upload_parmas["accounts"][account][key] = ""
-                self.account_table.setItem(curRowCount, idx, QTableWidgetItem(""))
+            if key not in new_account.keys():
+                new_account[key] = ""
+
+            self.upload_parmas["accounts"][account][key] = new_account[key]
+            self.account_table.setItem(curRowCount, idx, QTableWidgetItem(new_account[key]))
 
         self.__rewrite_local_accounts_json()
 
     def __change_cell(self):
+        '''
+        单元格修改：区分combox和text的
+        :return:
+        '''
         item = self.account_table.currentItem().text()
-        # todo:分开搞，下拉的不在这里修改
-        self.cell_dialog = TableCellDialog()
-        self.cell_dialog.set_text(item)
-        self.cell_dialog.show()
-        self.cell_dialog._content_back_signal.connect(self.__table_update)
-
-    def __table_update(self, content):
-        row = self.account_table.currentRow()
         col = self.account_table.currentColumn()
 
         if col == 0:
-            confirm = QMessageBox.critical(self.centralwidget, "错误", "无法修改账号名",
-                                          QMessageBox.Yes)
-            if confirm == QMessageBox.Yes:
-                return
+            QMessageBox.critical(self.centralwidget, "错误", "无法修改账号名")
+            return
+        elif col in [Params.account_info.index("web"), Params.account_info.index("video_type"), Params.account_info.index("use_file_title")]:
+            self.combox_dialog = ComboxDialog(item)
+            self.combox_dialog.show()
+            self.combox_dialog._combox_cell_signal.conncet(self.__table_update)
+        else:
+            self.cell_dialog = TableCellDialog(item)
+            self.cell_dialog.show()
+            self.cell_dialog._text_cell_signal.connect(self.__table_update)
+
+    def __table_update(self, content):
+        '''
+        更新表格内容和后台数据
+        :param content:
+        :return:
+        '''
+        row = self.account_table.currentRow()
+        col = self.account_table.currentColumn()
 
         self.account_table.setItem(row, col, QTableWidgetItem(content))
 

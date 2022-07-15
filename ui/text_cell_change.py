@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file '.\cell_content_change.ui'
+# Form implementation generated from reading ui file '.\text_cell_change.ui'
 #
 # Created by: PyQt5 UI code generator 5.9.2
 #

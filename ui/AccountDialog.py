@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QDialog, QMessageBox
 from PyQt5.QtCore import pyqtSignal
-from add_account import Ui_Dialog
+from ui.add_account import Ui_Dialog
 
 from Params import Params
 
@@ -22,10 +22,10 @@ class AccountDialog(QDialog, Ui_Dialog):
         加载本地的账号文件
         :return:
         '''
-        if not os.path.exists("resource/account_conf.json"):
+        if not os.path.exists("../resource/account_conf.json"):
             return dict()
 
-        with open("resource/account_conf.json", mode="r", encoding='utf-8') as meta_json:
+        with open("../resource/account_conf.json", mode="r", encoding='utf-8') as meta_json:
             # 在table中进行展示
             meta_dict = json.load(meta_json)
 
