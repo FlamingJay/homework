@@ -3,7 +3,7 @@ from moviepy.video.io.VideoFileClip import VideoFileClip
 
 from download.DownloadThread import DownloadThread
 from editor.EditorThread import EditorThread
-from shortVideo import Ui_MainWindow
+from double_page import Ui_MainWindow
 
 from Params import *
 import json
@@ -11,7 +11,8 @@ import sys
 import os
 
 from AccountDialog import AccountDialog
-
+from TableCellDialog import TableCellDialog
+from LoadingDialog import LoadingDialog
 
 class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self, parent=None):
@@ -38,9 +39,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         # 进行展示当前账号
         self.upload_parmas["accounts"] = self.__load_local_accounts()
-        # 若单元格修改，则进行提示；否则不提示
-        self.cell_changed = True
-        self.account_table.itemChanged.connect(self.__table_update)
+        self.account_table.doubleClicked.connect(self.__change_cell)
 
     def __init_btn_click(self):
         '''
@@ -597,6 +596,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         添加一行新的账号
         :return:
         '''
+        self.loading_dialog = LoadingDialog()
+
         self.add_dialog = AccountDialog()
         self.add_dialog.show()
         self.add_dialog._end_signal.connect(self.__add_finished)
@@ -607,6 +608,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         :return:
         '''
         curRow = self.account_table.currentRow()
+        if curRow == -1:
+            return
 
         confirm = QMessageBox.warning(self.centralwidget, "请注意！", "您将要删掉该账号，后台数据也会被删除", QMessageBox.Yes | QMessageBox.No)
         if confirm == QMessageBox.No:
@@ -690,8 +693,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             curRowCount = self.account_table.rowCount()
             self.account_table.insertRow(curRowCount)
 
-        self.cell_changed = False
-
         self.upload_parmas["accounts"][account] = dict()
         for idx, key in enumerate(Params.account_info):
             if key in new_account.keys():
@@ -702,24 +703,30 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.account_table.setItem(curRowCount, idx, QTableWidgetItem(""))
 
         self.__rewrite_local_accounts_json()
-        self.cell_changed = True
 
-    def __table_update(self):
-        '''
-        信号槽：表格发生变化时
-        :return:
-        '''
-        if self.cell_changed:
-            changed = QMessageBox.warning(self.centralwidget, "提示", "账号信息会被修改", QMessageBox.Yes)
-            if changed == QMessageBox.Yes:
-                row = self.account_table.currentRow()
-                col = self.account_table.currentColumn()
-                item = self.account_table.currentItem().text()
-                account = self.account_table.item(row, 0).text()
-                self.upload_parmas["accounts"][account][Params.account_info[col]] = item
-                self.__rewrite_local_accounts_json()
-        else:
-            pass
+    def __change_cell(self):
+        item = self.account_table.currentItem().text()
+        # todo:分开搞，下拉的不在这里修改
+        self.cell_dialog = TableCellDialog()
+        self.cell_dialog.set_text(item)
+        self.cell_dialog.show()
+        self.cell_dialog._content_back_signal.connect(self.__table_update)
+
+    def __table_update(self, content):
+        row = self.account_table.currentRow()
+        col = self.account_table.currentColumn()
+
+        if col == 0:
+            confirm = QMessageBox.critical(self.centralwidget, "错误", "无法修改账号名",
+                                          QMessageBox.Yes)
+            if confirm == QMessageBox.Yes:
+                return
+
+        self.account_table.setItem(row, col, QTableWidgetItem(content))
+
+        account = self.account_table.item(row, 0).text()
+        self.upload_parmas["accounts"][account][Params.account_info[col]] = content
+        self.__rewrite_local_accounts_json()
 
 
 if __name__ == "__main__":
