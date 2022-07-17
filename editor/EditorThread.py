@@ -37,3 +37,6 @@ class EditorThread(QThread):
 
     def run(self) -> None:
         self.editor.videos_edit(self.source_videos_list)
+
+    def stop(self):
+        self.terminate()

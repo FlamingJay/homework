@@ -475,9 +475,9 @@
        <widget class="QPushButton" name="run_single_btn">
         <property name="geometry">
          <rect>
-          <x>360</x>
+          <x>380</x>
           <y>240</y>
-          <width>71</width>
+          <width>131</width>
           <height>31</height>
          </rect>
         </property>
@@ -708,24 +708,6 @@
          <string>片头</string>
         </property>
        </widget>
-       <widget class="QPushButton" name="stop_single_btn">
-        <property name="geometry">
-         <rect>
-          <x>440</x>
-          <y>240</y>
-          <width>75</width>
-          <height>31</height>
-         </rect>
-        </property>
-        <property name="font">
-         <font>
-          <pointsize>9</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>停止剪辑</string>
-        </property>
-       </widget>
       </widget>
       <widget class="QGroupBox" name="groupBox_6">
        <property name="geometry">
@@ -826,9 +808,9 @@
        <widget class="QPushButton" name="run_merge_btn">
         <property name="geometry">
          <rect>
-          <x>340</x>
+          <x>380</x>
           <y>240</y>
-          <width>81</width>
+          <width>121</width>
           <height>31</height>
          </rect>
         </property>
@@ -902,17 +884,17 @@
          </rect>
         </property>
        </widget>
-       <widget class="QPushButton" name="stop_merge_btn">
+       <widget class="QLabel" name="top_10_status">
         <property name="geometry">
          <rect>
-          <x>430</x>
-          <y>240</y>
-          <width>75</width>
-          <height>31</height>
+          <x>280</x>
+          <y>30</y>
+          <width>211</width>
+          <height>21</height>
          </rect>
         </property>
         <property name="text">
-         <string>停止剪辑</string>
+         <string/>
         </property>
        </widget>
       </widget>

@@ -87,7 +87,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.select_save_path_single_btn.clicked.connect(lambda: self.__select_save_path("editor", "single_save_path"))
         self.run_single_btn.clicked.connect(self.__run_single_editor)
-        self.stop_single_btn.clicked.connect(self.__stop_single_editor)
         self.add_single_btn.clicked.connect(self.__single_add_row)
         self.delete_single_btn.clicked.connect(self.__single_remove_row)
 
@@ -95,12 +94,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.merge_type_btn_group.buttonClicked.connect(self.__select_merge_type)
         self.merge_type_btn_group.addButton(self.normal_merge_btn, 11)
         self.merge_type_btn_group.addButton(self.top10_merge_btn, 12)
+        self.merge_type_btn_group.setExclusive(True)
         self.select_merge_source_path_btn.clicked.connect(lambda: self.__select_multi_files("editor", "merge_source_path"))
         self.add_merge_btn.clicked.connect(self.__merge_add_row)
         self.delete_merge_btn.clicked.connect(self.__merge_remove_row)
         self.select_save_path_merge_btn.clicked.connect(lambda: self.__select_save_path("editor", "merge_save_path"))
         self.run_merge_btn.clicked.connect(self.__run_merge_editor)
-        self.stop_merge_btn.clicked.connect(self.__stop_merge_editor)
 
         # ------------- 账号管理相关  -----------------
         self.add_account_btn.clicked.connect(self.__account_add_row)
@@ -394,17 +393,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.run_single_btn.setEnabled(False)
         self.single_editor_thread.finished.connect(self.__reset_single_params)
 
-    def __stop_single_editor(self):
-        '''
-        停止编辑线程
-        '''
-        if self.run_single_btn.isEnabled():
-            return
-        else:
-            self.single_editor_thread.quit()
-            self.single_editor_thread.wait()
-            del self.single_editor_thread
-
     def __select_multi_files(self, module, key):
         '''
         选取多个文件
@@ -533,12 +521,19 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if sender == self.merge_type_btn_group:
             if self.merge_type_btn_group.checkedId() == 11:
                 self.editor_parmas["merge_type"] = 'normal'
+                self.top_10_status.setText("")
             elif self.merge_type_btn_group.checkedId() == 12:
                 self.editor_parmas["merge_type"] = 'top10'
                 # 读取top10转场
                 top10_path = QFileDialog.getExistingDirectory(self, "选取top10目录", "E:/")
+                if top10_path == "":
+                    self.top10_merge_btn.setChecked(False)
+                    self.editor_parmas["merge_type"] = None
+                    self.top_10_status.setText("未选中任何目录")
+                    return
+
                 files = os.listdir(top10_path)
-                files = [file for file in files if "mp4" in file]
+                files = [file for file in files if ".mp4" in file]
                 if len(files) != 12:
                     # todo: 数量提示：top10 + 开场 + 结尾
                     QMessageBox.critical(self.centralwidget, "错误", "top10转场素材不是12个(top10 + 开场 + 结尾)")
@@ -547,8 +542,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.editor_parmas["merge_top10_path"] = []
                 for file in files:
                     self.editor_parmas["merge_top10_path"].append(top10_path + "/" + file)
+                self.top_10_status.setText(top10_path)
             else:
                 self.editor_parmas["merge_type"] = 'normal'
+                self.top_10_status.setText("")
 
     def __reset_merge_params(self):
         '''
@@ -556,8 +553,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         :return:
         '''
         self.merge_editor_dialog.close()
-        if self.stop_merge_btn.isEnabled():
-            QMessageBox.information(self.centralwidget, "恭喜你", "剪辑完成")
+
+        QMessageBox.information(self.centralwidget, "恭喜你", "剪辑完成")
         for param in Params.merge_editor_keys:
             self.editor_parmas[param] = None
         self.merge_video_list.clear()
@@ -593,8 +590,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             else:
                 final_merge_videos.append(self.editor_parmas["merge_top10_path"][-2])
                 for i in range(len(self.editor_parmas["merge_ready_videos"])):
-                    final_merge_videos.append(self.editor_parmas["merge_ready_videos"][i])
                     final_merge_videos.append(self.editor_parmas["merge_top10_path"][i])
+                    final_merge_videos.append(self.editor_parmas["merge_ready_videos"][i])
                 final_merge_videos.append(self.editor_parmas["merge_top10_path"][-1])
         else:
             final_merge_videos = merge_ready_videos
@@ -617,13 +614,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.run_merge_btn.setEnabled(False)
         self.merge_editor_thread.finished.connect(self.__reset_merge_params)
 
-    def __stop_merge_editor(self):
-        self.stop_merge_btn.setEnabled(False)
-        if self.run_merge_btn.isEnabled():
-            return
-        else:
-            self.merge_editor_thread.quit()
-            self.merge_editor_thread.wait()
 
     def __account_add_row(self):
         '''
