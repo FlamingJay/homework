@@ -70,6 +70,6 @@ def single_process(args):
         video = CompositeVideoClip([video, water_clip])
 
     if save_path is not None:
-        video.write_videofile(save_path + name)
+        video.write_videofile(save_path + os.sep + name)
     else:
-        video.write_videofile(os.path.dirname(sys.executable) + "\\" + name)
+        video.write_videofile(os.path.dirname(sys.executable) + os.sep + name)

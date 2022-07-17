@@ -91,6 +91,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         # ------------- 合集剪辑相关  -----------------
         self.merge_type_btn_group.buttonClicked.connect(self.__select_merge_type)
+        self.merge_type_btn_group.addButton(self.normal_merge_btn, 11)
+        self.merge_type_btn_group.addButton(self.top10_merge_btn, 12)
         self.select_merge_source_path_btn.clicked.connect(lambda: self.__select_multi_files("editor", "merge_source_path"))
         self.add_merge_btn.clicked.connect(self.__merge_add_row)
         self.delete_merge_btn.clicked.connect(self.__merge_remove_row)
@@ -609,7 +611,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         添加一行新的账号
         :return:
         '''
-        self.loading_dialog = LoadingDialog("loading")
         self.add_dialog = AccountDialog()
         self.add_dialog.show()
         self.add_dialog._end_signal.connect(self.__add_finished)
@@ -636,7 +637,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # 更新json
         self.__rewrite_local_accounts_json()
         # 删掉bat文件
-        xx = os.getcwd()
         file = os.path.join(os.getcwd(), "resource", file)
         if os.path.exists(file):
             os.remove(file)
@@ -695,7 +695,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         :param new_account:
         :return:
         '''
-        self.loading_dialog.close()
         if "account" not in new_account.keys():
             return
 

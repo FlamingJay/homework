@@ -398,5 +398,5 @@ class Ui_MainWindow(object):
         self.add_account_btn.setText(_translate("MainWindow", "+"))
         self.delete_account_btn.setText(_translate("MainWindow", "-"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.account_page), _translate("MainWindow", "账号管理"))
-        self.label.setText(_translate("MainWindow", "<html><head/><body><p><span style=\" font-size:36pt; color:#00aa00;\">欢迎使用搬运工</span></p></body></html>"))
+        self.label.setText(_translate("MainWindow", "<html><head/><body><p><span style=\" font-size:36pt; color:#00aa00;\">欢迎杜总使用搬运工</span></p></body></html>"))
 

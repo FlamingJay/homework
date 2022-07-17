@@ -84,6 +84,6 @@ class MergeEditor(AutoEditor):
         # 写入
         cur_time = datetime.date.today()
         if self.output_path is not None:
-            all_videos.write_videofile(self.output_path + "/" + str(cur_time) + ".mp4")
+            all_videos.write_videofile(self.output_path + os.sep + str(cur_time) + ".mp4")
         else:
-            all_videos.write_videofile(os.path.dirname(sys.executable) + "/" + str(cur_time) + ".mp4")
+            all_videos.write_videofile(os.path.dirname(sys.executable) + os.sep + str(cur_time) + ".mp4")
