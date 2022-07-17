@@ -7,6 +7,7 @@ from ui.LoadingDialog import LoadingDialog
 from ui.double_page import Ui_MainWindow
 
 from Params import *
+import ctypes
 import json
 import sys
 import os
@@ -86,6 +87,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.select_save_path_single_btn.clicked.connect(lambda: self.__select_save_path("editor", "single_save_path"))
         self.run_single_btn.clicked.connect(self.__run_single_editor)
+        self.stop_single_btn.clicked.connect(self.__stop_single_editor)
         self.add_single_btn.clicked.connect(self.__single_add_row)
         self.delete_single_btn.clicked.connect(self.__single_remove_row)
 
@@ -98,6 +100,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.delete_merge_btn.clicked.connect(self.__merge_remove_row)
         self.select_save_path_merge_btn.clicked.connect(lambda: self.__select_save_path("editor", "merge_save_path"))
         self.run_merge_btn.clicked.connect(self.__run_merge_editor)
+        self.stop_merge_btn.clicked.connect(self.__stop_merge_editor)
 
         # ------------- 账号管理相关  -----------------
         self.add_account_btn.clicked.connect(self.__account_add_row)
@@ -230,7 +233,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         elif msg == -2:
             self.loading_dialog.close()
         else:
-            self.download_status.setText("正在下载：")
             self.download_progress_bar.setValue(int(msg))  # 将线程的参数传入进度条
 
     def __translate_to_english(self):
@@ -260,7 +262,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.download_params[key] = None
 
         # ui 还原
-        self.download_status.setText("空闲等待：")
         self.download_progress_bar.setValue(0)
         self.download_save_display.setText("")
         self.input_home_url.setText("")
@@ -392,6 +393,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.single_editor_thread.start()
         self.run_single_btn.setEnabled(False)
         self.single_editor_thread.finished.connect(self.__reset_single_params)
+
+    def __stop_single_editor(self):
+        '''
+        停止编辑线程
+        '''
+        if self.run_single_btn.isEnabled():
+            return
+        else:
+            self.single_editor_thread.quit()
+            self.single_editor_thread.wait()
+            del self.single_editor_thread
 
     def __select_multi_files(self, module, key):
         '''
@@ -544,7 +556,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         :return:
         '''
         self.merge_editor_dialog.close()
-        QMessageBox.information(self.centralwidget, "恭喜你", "剪辑完成")
+        if self.stop_merge_btn.isEnabled():
+            QMessageBox.information(self.centralwidget, "恭喜你", "剪辑完成")
         for param in Params.merge_editor_keys:
             self.editor_parmas[param] = None
         self.merge_video_list.clear()
@@ -552,7 +565,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.editor_merge_source_path_display.setText("")
         self.editor_merge_save_path_display.setText("")
         self.run_merge_btn.setEnabled(True)
-
 
     def __run_merge_editor(self):
         '''
@@ -588,10 +600,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             final_merge_videos = merge_ready_videos
 
         background_pic = self.editor_parmas["background_pic"]
-        background_pic_rate = self.editor_parmas["background_pic_rate"] if self.editor_parmas["background_pic_rate"] is not None \
-            else self.input_background_pic_rate.text()
+        background_pic_rate = self.editor_parmas["background_pic_rate"]
         background_audio = self.editor_parmas["background_music"]
-        volume = self.editor_parmas["volume"] if self.editor_parmas["volume"] is not None else self.input_volume.text()
+        volume = self.editor_parmas["volume"]
         original_autio_off = self.editor_parmas["is_music_covered"]
         water_logo = self.editor_parmas["water_logo"]
         output_path = self.editor_parmas["merge_save_path"]
@@ -605,6 +616,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.merge_editor_thread.start()
         self.run_merge_btn.setEnabled(False)
         self.merge_editor_thread.finished.connect(self.__reset_merge_params)
+
+    def __stop_merge_editor(self):
+        self.stop_merge_btn.setEnabled(False)
+        if self.run_merge_btn.isEnabled():
+            return
+        else:
+            self.merge_editor_thread.quit()
+            self.merge_editor_thread.wait()
 
     def __account_add_row(self):
         '''
