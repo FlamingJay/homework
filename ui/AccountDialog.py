@@ -22,10 +22,11 @@ class AccountDialog(QDialog, Ui_Dialog):
         加载本地的账号文件
         :return:
         '''
-        if not os.path.exists("../resource/account_conf.json"):
+        account_path = os.path.abspath(os.path.join(os.getcwd(),  "resource", "account_conf.json"))
+        if not os.path.exists(account_path):
             return dict()
 
-        with open("../resource/account_conf.json", mode="r", encoding='utf-8') as meta_json:
+        with open(account_path, mode="r", encoding='utf-8') as meta_json:
             # 在table中进行展示
             meta_dict = json.load(meta_json)
 

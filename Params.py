@@ -3,7 +3,7 @@
 class Params:
     download_keys = ["save_path", "home_page_url", "translate_to_english", "web"]
 
-    editor_common_keys = ["background_music", "water_logo", "background_pic", "volume", "is_music_covered"]
+    editor_common_keys = ["background_music", "water_logo", "background_pic", "background_pic_rate", "volume", "is_music_covered"]
 
     single_editor_keys = ["single_ready_videos", "single_del_videos", "single_save_path", "input_start_x", "input_start_y", "input_end_x", "input_end_y", "front_cut_dur", "end_cut_dur"]
 

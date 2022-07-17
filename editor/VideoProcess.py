@@ -5,14 +5,11 @@ import os, sys
 
 
 def single_process(args):
-    video_file, name, background_music, volume, audio_off, background_pic, save_path, crop_x_start, crop_y_start, crop_x_end, crop_y_end, logo, front, end = args
+    video_file, name, background_music, volume, audio_off, background_pic, background_pic_rate, \
+    save_path, crop_x_start, crop_y_start, crop_x_end, crop_y_end, logo, front, end = args
+
     video = VideoFileClip(video_file)
     video = video.subclip(front, video.duration - end)
-
-    print(video.size[0])
-    print(video.size[1])
-    print(video.size[0] / video.size[1])
-    print(video.size[1] / video.size[0])
 
     # 进行裁剪
     if (crop_x_end - crop_x_start > 0) and (crop_y_end - crop_y_start > 0):
@@ -50,20 +47,20 @@ def single_process(args):
     if (background_pic is not None) and (logo is not None):
         # 视频适配背景
         if back_size[0] > back_size[1]:
-            new_height = 1080
+            new_height = 1080 * background_pic_rate
             new_width = new_height * video.size[0] / video.size[1]
         else:
-            new_width = 1080
+            new_width = 1080 * background_pic_rate
             new_height = new_width * video.size[1] / video.size[0]
         video = video.resize((new_width, new_height))
         # 叠层
         video = CompositeVideoClip([background_clip, video, water_clip])
     elif background_pic is not None:
         if back_size[0] > back_size[1]:
-            new_height = 1080
+            new_height = 1080 * background_pic_rate
             new_width = new_height * video.size[0] / video.size[1]
         else:
-            new_width = 1080
+            new_width = 1080 * background_pic_rate
             new_height = new_width * video.size[1] / video.size[0]
         video = video.resize((new_width, new_height))
         # 叠层

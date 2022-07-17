@@ -24,7 +24,7 @@
      </rect>
     </property>
     <property name="currentIndex">
-     <number>1</number>
+     <number>0</number>
     </property>
     <property name="iconSize">
      <size>
@@ -227,6 +227,9 @@
          <pointsize>15</pointsize>
         </font>
        </property>
+       <property name="styleSheet">
+        <string notr="true">QProgressBar{border: 1px solid grey}</string>
+       </property>
        <property name="maximum">
         <number>100</number>
        </property>
@@ -358,7 +361,7 @@
          </rect>
         </property>
         <property name="text">
-         <string>50</string>
+         <string/>
         </property>
        </widget>
        <widget class="QCheckBox" name="is_music_covered">
@@ -389,7 +392,7 @@
          <rect>
           <x>100</x>
           <y>20</y>
-          <width>171</width>
+          <width>151</width>
           <height>31</height>
          </rect>
         </property>
@@ -407,7 +410,7 @@
        <widget class="QLabel" name="label_background_pic">
         <property name="geometry">
          <rect>
-          <x>280</x>
+          <x>260</x>
           <y>20</y>
           <width>31</width>
           <height>31</height>
@@ -420,14 +423,14 @@
        <widget class="QLineEdit" name="input_background_pic_rate">
         <property name="geometry">
          <rect>
-          <x>320</x>
+          <x>300</x>
           <y>20</y>
-          <width>31</width>
+          <width>51</width>
           <height>31</height>
          </rect>
         </property>
         <property name="text">
-         <string>50</string>
+         <string/>
         </property>
        </widget>
       </widget>
@@ -676,7 +679,7 @@
          </rect>
         </property>
         <property name="text">
-         <string>0</string>
+         <string/>
         </property>
        </widget>
        <widget class="QLineEdit" name="input_front_second">
@@ -689,7 +692,7 @@
          </rect>
         </property>
         <property name="text">
-         <string>0</string>
+         <string/>
         </property>
        </widget>
        <widget class="QLabel" name="label_front">

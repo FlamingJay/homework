@@ -5,9 +5,10 @@ from download.douyin import DouyinDownloader
 from download.youtube import YoutubeDownloader
 import os
 
+
 class DownloadThread(QThread):
     #  通过类成员对象定义信号对象
-    _signal = pyqtSignal(int)
+    _download_signal = pyqtSignal(int)
 
     def __init__(self, web, home_page_url, save_path, translate_to_english):
         super(DownloadThread, self).__init__()
@@ -39,10 +40,10 @@ class DownloadThread(QThread):
             return
 
         # 解析
-        # todo: 使用QMovie做动态等待窗口
-        self.loading_dialog = LoadingDialog(mode="loading")
+        self._download_signal.emit(-1)
         nickname, parsed_urls_names = self.autoloader.parseUrl(self.target_link, self.translate_to_english)
-        self.loading_dialog.close()
+        self._download_signal.emit(-2)
+
         video_count = len(parsed_urls_names)
         # 保存路径
         nickname_dir = os.path.join(self.save_path, nickname)
@@ -54,4 +55,4 @@ class DownloadThread(QThread):
             video_url = item[0]
             video_name = item[1]
             self.autoloader.download(video_url, video_name, nickname_dir)
-            self._signal.emit(int((i+1) / video_count * 100))
+            self._download_signal.emit(int((i+1) / video_count * 100))

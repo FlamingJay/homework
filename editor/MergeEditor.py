@@ -6,13 +6,14 @@ import os
 import sys
 
 class MergeEditor(AutoEditor):
-    def __init__(self, background_pic=None, background_music=None, volume=None, is_covered_music=None, water_logo=None,
+    def __init__(self, background_pic=None, background_pic_rate=None, background_music=None, volume=None, is_covered_music=None, water_logo=None,
                  save_path=None):
         super(MergeEditor, self).__init__()
         self.background_pic = background_pic
+        self.background_pic_rate = 1.0 if background_pic_rate is None else float(background_pic_rate)
         self.background_audio = background_music
-        self.volume = volume
-        self.original_autio_off = is_covered_music
+        self.volume = 0 if volume is None else int(volume)
+        self.original_autio_off = False if is_covered_music is None else is_covered_music
         self.water_logo = water_logo
         self.output_path = save_path
 
@@ -43,10 +44,10 @@ class MergeEditor(AutoEditor):
         if (self.background_pic is not None) and (self.water_logo is not None):
             # 视频适配背景
             if back_size[0] > back_size[1]:
-                new_height = 1080 * 0.946
+                new_height = 1080 * self.background_pic_rate
                 new_width = new_height * all_videos.size[0] / all_videos.size[1]
             else:
-                new_width = 1080 * 0.946
+                new_width = 1080 * self.background_pic_rate
                 new_height = new_width * all_videos.size[1] / all_videos.size[0]
             all_videos = all_videos.resize((new_width, new_height))
 
@@ -54,10 +55,10 @@ class MergeEditor(AutoEditor):
             all_videos = CompositeVideoClip([background_clip, all_videos, water_clip])
         elif self.background_pic is not None:
             if back_size[0] > back_size[1]:
-                new_height = 1080 * 0.946
+                new_height = 1080 * self.background_pic_rate
                 new_width = new_height * all_videos.size[0] / all_videos.size[1]
             else:
-                new_width = 1080 * 0.946
+                new_width = 1080 * self.background_pic_rate
                 new_height = new_width * all_videos.size[1] / all_videos.size[0]
             all_videos = all_videos.resize((new_width, new_height))
 

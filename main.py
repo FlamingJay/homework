@@ -3,6 +3,7 @@ from moviepy.video.io.VideoFileClip import VideoFileClip
 
 from download.DownloadThread import DownloadThread
 from editor.EditorThread import EditorThread
+from ui.LoadingDialog import LoadingDialog
 from ui.double_page import Ui_MainWindow
 
 from Params import *
@@ -60,6 +61,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # ------------- 视频剪辑公共部分  ----------------
         self.select_background_pic_btn.clicked.connect(lambda: self.__select_file("editor", "background_pic"))
         # todo: 背景图可用比例，默认为1
+        self.input_background_pic_rate.editingFinished.connect(
+            lambda: self.__line_edit_change("editor", "background_pic_rate", self.input_background_pic_rate.text()))
         self.select_background_music_btn.clicked.connect(lambda: self.__select_file("editor", "background_music"))
         self.select_water_logo_btn.clicked.connect(lambda: self.__select_file("editor", "water_logo"))
         self.is_music_covered.clicked.connect(self.__cover_music)
@@ -206,8 +209,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         home_page_url = self.download_params["home_page_url"]
         save_path = self.download_params["save_path"]
         translate_to_english = self.download_params["translate_to_english"]
+
         self.download_thread = DownloadThread(web, home_page_url, save_path, translate_to_english)
-        self.download_thread._signal.connect(self.__print_backlog)
+        self.download_thread._download_signal.connect(self.__print_backlog)
         self.download_thread.start()
 
         self.download_btn.setEnabled(False)
@@ -219,7 +223,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         :param msg:
         :return:
         '''
-        self.download_progress_bar.setValue(int(msg))  # 将线程的参数传入进度条
+        if msg == -1:
+            self.loading_dialog = LoadingDialog("loading")
+        elif msg == -2:
+            self.loading_dialog.close()
+        else:
+            self.download_status.setText("正在下载：")
+            self.download_progress_bar.setValue(int(msg))  # 将线程的参数传入进度条
 
     def __translate_to_english(self):
         '''
@@ -248,6 +258,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.download_params[key] = None
 
         # ui 还原
+        self.download_status.setText("空闲等待：")
         self.download_progress_bar.setValue(0)
         self.download_save_display.setText("")
         self.input_home_url.setText("")
@@ -271,14 +282,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.editor_parmas["is_music_covered"] = True
         else:
             self.editor_parmas["is_music_covered"] = False
-
-    def __show_list(self, show_items):
-        '''
-        :param show_items:
-        :return:
-        '''
-        metric, names = show_items[0], show_items[1]
-        print(metric)
 
     def __single_add_row(self):
         '''
@@ -346,6 +349,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         单视频剪辑 - 参数复位
         :return:
         '''
+        self.single_editor_dialog.close()
+        QMessageBox.information(self.centralwidget, "恭喜你", "剪辑完成")
         for key in Params.single_editor_keys:
             self.editor_parmas[key] = None
 
@@ -354,6 +359,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.editor_single_source_path_display.setText("")
         self.editor_single_save_path_display.setText("")
         self.run_single_btn.setEnabled(True)
+
 
     def __run_single_editor(self):
         '''
@@ -369,17 +375,18 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     single_ready_videos.append(self.editor_parmas["single_ready_videos"][idx])
 
         background_pic = self.editor_parmas["background_pic"]
+        background_pic_rate = self.editor_parmas["background_pic_rate"]
         background_audio = self.editor_parmas["background_music"]
         volume = self.editor_parmas["volume"]
         original_autio_off = self.editor_parmas["is_music_covered"]
         water_logo = self.editor_parmas["water_logo"]
         output_path = self.editor_parmas["single_save_path"]
+        self.single_editor_dialog = LoadingDialog("single_editor")
 
-        self.single_editor_thread = EditorThread("single", single_ready_videos, background_pic, background_audio,
-                                                 volume, original_autio_off, water_logo, output_path, self.editor_parmas)
+        self.single_editor_thread = EditorThread("single", single_ready_videos, background_pic, background_pic_rate,
+                                                 background_audio, volume, original_autio_off,
+                                                 water_logo, output_path, self.editor_parmas)
 
-        # list展示
-        self.single_editor_thread._signal.connect(self.__show_list)
         self.single_editor_thread.start()
         self.run_single_btn.setEnabled(False)
         self.single_editor_thread.finished.connect(self.__reset_single_params)
@@ -534,6 +541,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         重置合集相关参数
         :return:
         '''
+        self.merge_editor_dialog.close()
+        QMessageBox.information(self.centralwidget, "恭喜你", "剪辑完成")
         for param in Params.merge_editor_keys:
             self.editor_parmas[param] = None
         self.merge_video_list.clear()
@@ -541,6 +550,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.editor_merge_source_path_display.setText("")
         self.editor_merge_save_path_display.setText("")
         self.run_merge_btn.setEnabled(True)
+
 
     def __run_merge_editor(self):
         '''
@@ -576,18 +586,20 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             final_merge_videos = merge_ready_videos
 
         background_pic = self.editor_parmas["background_pic"]
+        background_pic_rate = self.editor_parmas["background_pic_rate"] if self.editor_parmas["background_pic_rate"] is not None \
+            else self.input_background_pic_rate.text()
         background_audio = self.editor_parmas["background_music"]
         volume = self.editor_parmas["volume"] if self.editor_parmas["volume"] is not None else self.input_volume.text()
         original_autio_off = self.editor_parmas["is_music_covered"]
         water_logo = self.editor_parmas["water_logo"]
         output_path = self.editor_parmas["merge_save_path"]
 
-        self.merge_editor_thread = EditorThread("merge", final_merge_videos, background_pic, background_audio,
-                                                 volume,
-                                                 original_autio_off, water_logo, output_path, self.editor_parmas)
+        self.merge_editor_dialog = LoadingDialog("merge_editor")
 
-        # list展示
-        self.merge_editor_thread._signal.connect(self.__show_list)
+        self.merge_editor_thread = EditorThread("merge", final_merge_videos, background_pic, background_pic_rate,
+                                                background_audio, volume, original_autio_off,
+                                                water_logo, output_path, self.editor_parmas)
+
         self.merge_editor_thread.start()
         self.run_merge_btn.setEnabled(False)
         self.merge_editor_thread.finished.connect(self.__reset_merge_params)
@@ -597,6 +609,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         添加一行新的账号
         :return:
         '''
+        self.loading_dialog = LoadingDialog("loading")
         self.add_dialog = AccountDialog()
         self.add_dialog.show()
         self.add_dialog._end_signal.connect(self.__add_finished)
@@ -623,8 +636,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # 更新json
         self.__rewrite_local_accounts_json()
         # 删掉bat文件
-        if os.path.exists("./resource/" + file):
-            os.remove("./resource/" + file)
+        xx = os.getcwd()
+        file = os.path.join(os.getcwd(), "resource", file)
+        if os.path.exists(file):
+            os.remove(file)
 
     def __load_local_accounts(self):
         '''
@@ -676,15 +691,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def __add_finished(self, new_account):
         '''
-        信号槽：收到完成账号注册的信息，并将注册信息进行添加
+        信号槽：收到完成账号注册的信息，并将注册信息进行添加，允许覆盖
         :param new_account:
         :return:
         '''
+        self.loading_dialog.close()
         if "account" not in new_account.keys():
             return
 
         account = new_account["account"]
-        # 判断是否已存在:todo 这块的逻辑是否有必要？
+        # 判断是否已存在,若存在，则找到对应的行进行覆盖
         if account in self.upload_parmas["accounts"].keys():
             for row in range(self.account_table.rowCount()):
                 if self.account_table.item(row, 0).text() == account:
@@ -716,9 +732,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             QMessageBox.critical(self.centralwidget, "错误", "无法修改账号名")
             return
         elif col in [Params.account_info.index("web"), Params.account_info.index("video_type"), Params.account_info.index("use_file_title")]:
-            self.combox_dialog = ComboxDialog(item)
+            self.combox_dialog = ComboxDialog(Params.account_info[col])
             self.combox_dialog.show()
-            self.combox_dialog._combox_cell_signal.conncet(self.__table_update)
+            self.combox_dialog._combox_cell_signal.connect(self.__table_update)
         else:
             self.cell_dialog = TableCellDialog(item)
             self.cell_dialog.show()
