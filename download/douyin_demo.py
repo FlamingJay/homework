@@ -21,7 +21,6 @@ nickname = re.findall('"nickname":"(.*?)"', se.text)
 # 抖音视频的URL : Request URL:
 url="https://www.iesdouyin.com/web/api/v2/aweme/post/?sec_uid={0}&count=21&max_cursor=0&aid=1128&_signature=R6Ub1QAAJ-gQklOOeJfpTEelG8&dytk=".format(sec_uid[0])
 
-
 #调用requests中的get获取抖音作者主页的网页链接
 r = requests.get(url=url, headers=headers,stream=True)
 #输出访问状态，如为<200>即为访问成功

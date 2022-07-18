@@ -1,7 +1,6 @@
 from PyQt5.QtCore import QThread, pyqtSignal
 
-from ui.LoadingDialog import LoadingDialog
-from download.douyin import DouyinDownloader
+from download.douyin_v2 import DouyinDownloader
 from download.youtube import YoutubeDownloader
 import os
 
