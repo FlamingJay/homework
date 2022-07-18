@@ -57,6 +57,18 @@ class AccountDialog(QDialog, Ui_Dialog):
         elif any(char in res['account'] and char for char in Params.file_name_black_char):
             QMessageBox.warning(self, "提示", "账号名中不要包含特殊字符*|等", QMessageBox.Yes)
             success = False
+        elif len(res["title_tags"]) > 50:
+            QMessageBox.warning(self, "提示", "youtube标题tags长度超过50")
+            success = False
+        elif (len(res["title"]) + len(res["title_tags"]) ) > 100:
+            QMessageBox.warning(self, "提示", "youtube标题长度超过100, 标题：%d, 标题tags：%d" % (len(res["title"]), len(res["title_tags"])))
+            success = False
+        elif len(res["description"]) > 5000:
+            QMessageBox.warning(self, "提示", "youtube描述长度超过5000")
+            success = False
+        elif len(res["tags"]) > 500:
+            QMessageBox.warning(self, "提示", "youtube的tags长度超过5000")
+            success = False
         else:
             # 不希望被覆盖
             if res["account"] in self.accounts.keys():

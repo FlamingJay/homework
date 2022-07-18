@@ -51,14 +51,20 @@ class YoutubeDownloader(AutoDownLoader, ABC):
             video = sorted(yt.filter("mp4"), key=lambda video: int(video.resolution[:-1]), reverse=True)[0]
 
         try:
-            out_file = video.download(save_path)
+            video_name = yt.title
             if self.translate_to_english:
                 word_dict = Translator.load_word_dict()
-                title = yt.title
-                name = Translator.word_replace(title, word_dict)
-                new_name = Translator.baiduAPI_translate(query_str=name, from_lang='zh',
-                                                         to_lang='en')
+                video_name = Translator.word_replace(video_name, word_dict)
+                video_name = Translator.baiduAPI_translate(query_str=video_name, from_lang='zh', to_lang='en')
 
-                os.rename(out_file, save_path + os.sep + str(new_name) + ".mp4")
+            # 判断重名、长度等
+            video_name = video_name[:min(len(video_name), 50)]
+            i = 0
+            while os.path.exists(save_path + os.sep + video_name + '.mp4'):
+                video_name = video_name.replaceAll("_" + str(i), "")
+                i += 1
+                video_name += ("_" + str(i))
+
+            video.download(save_path, video_name)
         except OSError:
             return
