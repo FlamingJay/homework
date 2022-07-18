@@ -61,7 +61,7 @@ class YoutubeDownloader(AutoDownLoader, ABC):
             video_name = video_name[:min(len(video_name), 50)]
             i = 0
             while os.path.exists(save_path + os.sep + video_name + '.mp4'):
-                video_name = video_name.replaceAll("_" + str(i), "")
+                video_name = video_name.replace("_" + str(i), "")
                 i += 1
                 video_name += ("_" + str(i))
 

@@ -40,11 +40,11 @@ class DouyinDownloader(AutoDownLoader, ABC):
         sum_url = 'https://www.iesdouyin.com/web/api/v2/user/info/?sec_uid={0}'.format(sec_uid[0])
         se = session.get(sum_url)
         # 用户名
-        nickname = re.findall('"nickname":"(.*?)"', se.text)
+        nicknames = re.findall('"nickname":"(.*?)"', se.text)
         # Translator配置
         word_dict = Translator.load_word_dict()
         # 标题正则修改
-        rstr = r"[\/\\\:;\*#￥%$!@^……&()\?\"\<\>\|]"
+        rstr = r"[\/\\\:;\*#￥%$!@^……&()\?\"\<\>\|\n\t]"
 
         try:
             url = "https://www.iesdouyin.com/web/api/v2/aweme/post/?sec_uid={0}&count=21&max_cursor=0&aid=1128&_signature=R6Ub1QAAJ-gQklOOeJfpTEelG8&dytk=".format(
@@ -56,7 +56,16 @@ class DouyinDownloader(AutoDownLoader, ABC):
             has_more = data_json['has_more']
             max_cursor = data_json['max_cursor']
             for i in range(len(data_json['aweme_list'])):
-                video_url = data_json['aweme_list'][i]['video']['play_addr_lowbr']['url_list'][0]
+                video_url_json = data_json['aweme_list'][i]['video']
+                target_key = ""
+                if 'play_addr_lowbr' in video_url_json.keys():
+                    target_key = 'play_addr_lowbr'
+                elif 'play_addr' in video_url_json.keys():
+                    target_key = 'play_addr'
+                else:
+                    continue
+                video_url = data_json['aweme_list'][i]['video'][target_key]['url_list'][0]
+
                 video_name = re.sub(rstr, '', data_json['aweme_list'][i]['desc'])
                 if translate_to_english:
                     try:
@@ -81,7 +90,15 @@ class DouyinDownloader(AutoDownLoader, ABC):
                 has_more = data_json['has_more']  # 重置hasmore直到返回为false则退出循环
                 max_cursor = data_json['max_cursor']  # 每次重置这个页数，继续替换url中下一页页码进行访问
                 for i in range(len(data_json['aweme_list'])):
-                    video_url = data_json['aweme_list'][i]['video']['play_addr_lowbr']['url_list'][0]
+                    video_url_json = data_json['aweme_list'][i]['video']
+                    target_key = ""
+                    if 'play_addr_lowbr' in video_url_json.keys():
+                        target_key = 'play_addr_lowbr'
+                    elif 'play_addr' in video_url_json.keys():
+                        target_key = 'play_addr'
+                    else:
+                        continue
+                    video_url = data_json['aweme_list'][i]['video'][target_key]['url_list'][0]
                     video_name = re.sub(rstr, '', data_json['aweme_list'][i]['desc'])
                     if translate_to_english:
                         try:
@@ -95,7 +112,12 @@ class DouyinDownloader(AutoDownLoader, ABC):
         except:
             pass
 
-        return nickname[0], parsed_urls_names
+        nickname = str(time.time())
+        if len(nicknames) != 0:
+            nickname = nicknames[0]
+
+
+        return nickname, parsed_urls_names
 
     def download(self, video_url, video_name, save_path):
         '''
@@ -113,7 +135,7 @@ class DouyinDownloader(AutoDownLoader, ABC):
             if response.status_code == 200:
                 i = 0
                 while os.path.exists(save_path + os.sep + video_name + '.mp4'):
-                    video_name = video_name.replaceAll("_" + str(i), "")
+                    video_name = video_name.replace("_" + str(i), "")
                     i += 1
                     video_name += ("_" + str(i))
 
