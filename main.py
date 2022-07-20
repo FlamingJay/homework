@@ -7,7 +7,6 @@ from ui.LoadingDialog import LoadingDialog
 from ui.double_page import Ui_MainWindow
 
 from Params import *
-import ctypes
 import json
 import sys
 import os
@@ -44,6 +43,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.upload_parmas["accounts"] = self.__load_local_accounts()
         self.account_table.doubleClicked.connect(self.__change_cell)
 
+        # 对表格进行初始化
+
+
     def __init_btn_click(self):
         '''
         对btn的信号槽进行关联
@@ -61,7 +63,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         # ------------- 视频剪辑公共部分  ----------------
         self.select_background_pic_btn.clicked.connect(lambda: self.__select_file("editor", "background_pic"))
-        # todo: 背景图可用比例，默认为1
         self.input_background_pic_rate.editingFinished.connect(
             lambda: self.__line_edit_change("editor", "background_pic_rate", self.input_background_pic_rate.text()))
         self.select_background_music_btn.clicked.connect(lambda: self.__select_file("editor", "background_music"))
@@ -324,21 +325,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             return
 
         # 正常删除
-        index = item.whatsThis()
         self.single_video_list.takeItem(self.single_video_list.row(item))
-        # 把下标存起来
-        if self.editor_parmas["single_del_videos"] is None:
-            self.editor_parmas["single_del_videos"] = []
-        self.editor_parmas["single_del_videos"].append(str(index))
+
         # 更新总时长
         self.video_count_display.setText(
-            str(len(self.editor_parmas["single_ready_videos"]) - len(self.editor_parmas["single_del_videos"])))
+            str(len(self.single_video_list)))
         self.video_count_display.setStyleSheet("color:red;font-size:24px")
         self.video_count_display.update()
 
         # 若已经都没有了，则重置源目录相关的参数
         if len(self.single_video_list) == 0:
-            self.editor_parmas["single_del_videos"] = None
             self.editor_parmas["single_ready_videos"] = None
             self.single_video_list.clear()
             self.video_count_display.setText("")
@@ -362,19 +358,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.editor_single_save_path_display.setText("")
         self.run_single_btn.setEnabled(True)
 
-
     def __run_single_editor(self):
         '''
         开始进行单视频剪辑
         :return:
         '''
-        single_ready_videos = []
-        if self.editor_parmas["single_del_videos"] is None:
-            single_ready_videos = self.editor_parmas["single_ready_videos"]
-        else:
-            for idx in range(len(self.editor_parmas["single_ready_videos"])):
-                if idx not in self.editor_parmas["single_del_videos"]:
-                    single_ready_videos.append(self.editor_parmas["single_ready_videos"][idx])
+        index_list = []
+        for i in range(len(self.single_video_list)):
+            index_list.append(int(self.single_video_list.item(i).whatsThis()))
+
+        single_ready_videos = [self.editor_parmas["merge_ready_videos"][index] for index in index_list]
 
         background_pic = self.editor_parmas["background_pic"]
         background_pic_rate = self.editor_parmas["background_pic_rate"]
@@ -467,8 +460,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         # 添加 index | 时长 |名字
         item = QListWidgetItem()
-        item.setText(f"%4d | %4d秒 | %s" % (len(self.editor_parmas["merge_ready_videos"]), duration, video.split("/")[-1]))
-        item.setWhatsThis(str(len(self.editor_parmas["merge_ready_videos"])))
+        index = len(self.editor_parmas["merge_ready_videos"]) - 1
+        item.setText(f"%4d | %4d秒 | %s" % (index, duration, video.split("/")[-1]))
+        item.setWhatsThis(str(index))
         self.merge_video_list.addItem(item)
 
         self.video_duration_display.setText(str(self.editor_parmas["total_duration"]))
@@ -489,10 +483,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # 正常删除
         index = item.whatsThis()
         self.merge_video_list.takeItem(self.merge_video_list.row(item))
-        # 把下标存起来
-        if self.editor_parmas["merge_del_videos"] is None:
-            self.editor_parmas["merge_del_videos"] = []
-        self.editor_parmas["merge_del_videos"].append(str(index))
+
         # 更新总时长
         self.editor_parmas["total_duration"] -= self.editor_parmas["merge_video_duration"][int(index)]
         self.video_duration_display.setText(
@@ -502,7 +493,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         # 若已经都没有了，则重置源目录相关的参数
         if len(self.merge_video_list) == 0:
-            self.editor_parmas["merge_del_videos"] = None
             self.editor_parmas["merge_ready_videos"] = None
             self.editor_parmas["total_duration"] = 0
             self.editor_parmas["merge_video_duration"] = None
@@ -568,14 +558,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         开始进行合集视频剪辑
         :return:
         '''
-        merge_ready_videos = []
-        if self.editor_parmas["merge_del_videos"] is None:
-            merge_ready_videos = self.editor_parmas["merge_ready_videos"]
-        else:
-            for idx in range(len(self.editor_parmas["merge_ready_videos"])):
-                if idx not in self.editor_parmas["merge_del_videos"]:
-                    merge_ready_videos.append(self.editor_parmas["merge_ready_videos"][idx])
+        index_list = []
+        for i in range(len(self.merge_video_list)):
+            index_list.append(int(self.merge_video_list.item(i).whatsThis()))
 
+        merge_ready_videos = [self.editor_parmas["merge_ready_videos"][index] for index in index_list]
         final_merge_videos = []
 
         if self.editor_parmas["merge_type"] == "top10":
@@ -763,6 +750,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.upload_parmas["accounts"][account][Params.account_info[col]] = content
         self.__rewrite_local_accounts_json()
 
+    def __drag_drop(self):
+
+        x = self.merge_video_list.currentRow()
+        print("xx")
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
