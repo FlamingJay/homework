@@ -72,23 +72,25 @@ class YouTubeUploaderLong:
 
         # 填写title/desc
         self.logger.info("step 5: fill in the title and desc....")
-        title = self.browser.find_element_by_id(YOUTUBE_CONSTANT.TEXTBOX)
+        title_ele = self.browser.find_element_by_id(YOUTUBE_CONSTANT.TEXTBOX)
         if self.use_file_title:
+            print("使用默认文件标题")
             self.browser.driver.implicitly_wait(5)
-            ActionChains(self.browser.driver).move_to_element(title).click(title).send_keys(
-                "  " + self.title_tags).perform()
+            ActionChains(self.browser.driver).move_to_element(title_ele).click(title_ele).send_keys("  " + self.title_tags).perform()
             time.sleep(YOUTUBE_CONSTANT.USER_WAITING_TIME)
         else:
-            title.clear()
+            ActionChains(self.browser.driver).move_to_element(title_ele).click(title_ele)
+            title_ele.clear()
             self.browser.driver.implicitly_wait(5)
-            ActionChains(self.browser.driver).move_to_element(title).click(title).send_keys(
-                "  ".join([self.title, self.title_tags])).perform()
+            ActionChains(self.browser.driver).move_to_element(title_ele).click(title_ele).send_keys("  ".join([self.title, self.title_tags])).perform()
             time.sleep(YOUTUBE_CONSTANT.USER_WAITING_TIME)
 
-        desc = self.browser.find_elements_by_id(YOUTUBE_CONSTANT.TEXTBOX)[1]
-        desc.clear()
-        self.browser.driver.implicitly_wait(10)
-        ActionChains(self.browser.driver).move_to_element(desc).click(desc).send_keys(self.description).perform()
+        desc_ele = self.browser.find_elements_by_id(YOUTUBE_CONSTANT.TEXTBOX)[1]
+        ActionChains(self.browser.driver).move_to_element(desc_ele).click(desc_ele)
+        desc_ele.clear()
+        self.browser.driver.implicitly_wait(5)
+
+        ActionChains(self.browser.driver).move_to_element(desc_ele).click(desc_ele).send_keys(self.description).perform()
 
         self.browser.driver.execute_script("window.scrollTo(150, 900);")
         time.sleep(YOUTUBE_CONSTANT.USER_WAITING_TIME)
