@@ -6,16 +6,14 @@ import urllib.request
 import urllib.error
 
 from download.AutoDownLoader import AutoDownLoader
-from download import Translator
 
 
 class YoutubeDownloader(AutoDownLoader, ABC):
     def __init__(self):
         pass
 
-    def parseUrl(self, home_page_url, translate_to_english):
+    def parseUrl(self, home_page_url):
         parsed_urls_names = []
-        self.translate_to_english = translate_to_english
 
         # 先对home_page_url解析
         try:
@@ -52,10 +50,6 @@ class YoutubeDownloader(AutoDownLoader, ABC):
 
         try:
             video_name = yt.title
-            if self.translate_to_english:
-                word_dict = Translator.load_word_dict()
-                video_name = Translator.word_replace(video_name, word_dict)
-                video_name = Translator.baiduAPI_translate(query_str=video_name, from_lang='zh', to_lang='en')
 
             # 判断重名、长度等
             video_name = video_name[:min(len(video_name), 50)]

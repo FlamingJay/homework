@@ -9,7 +9,6 @@ from contextlib import closing
 from urllib import parse
 
 from download.AutoDownLoader import AutoDownLoader
-from download import Translator
 
 
 class DouyinDownloader(AutoDownLoader, ABC):
@@ -23,7 +22,7 @@ class DouyinDownloader(AutoDownLoader, ABC):
             'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1',
         }
 
-    def parseUrl(self, home_page_url, translate_to_english):
+    def parseUrl(self, home_page_url):
         '''
         解析主页链接，返回所有的视频链接列表
         :param home_page_url:
@@ -41,8 +40,7 @@ class DouyinDownloader(AutoDownLoader, ABC):
         se = session.get(sum_url)
         # 用户名
         nicknames = re.findall('"nickname":"(.*?)"', se.text)
-        # Translator配置
-        word_dict = Translator.load_word_dict()
+
         # 标题正则修改
         rstr = r"[\/\\\:;\*#￥%$!@^……&()\?\"\<\>\|\n\t]"
 
@@ -67,14 +65,7 @@ class DouyinDownloader(AutoDownLoader, ABC):
                 video_url = data_json['aweme_list'][i]['video'][target_key]['url_list'][0]
 
                 video_name = re.sub(rstr, '', data_json['aweme_list'][i]['desc'])
-                if translate_to_english:
-                    try:
-                        time.sleep(1)
-                        video_name = Translator.word_replace(video_name, word_dict)
-                        video_name = Translator.baiduAPI_translate(query_str=video_name, from_lang='zh',
-                                                                   to_lang='en')
-                    except:
-                        video_name = video_name
+
                 parsed_urls_names.append([video_url, video_name])
             while has_more == True:
                 url_parsed = parse.urlparse(url)
@@ -100,14 +91,7 @@ class DouyinDownloader(AutoDownLoader, ABC):
                         continue
                     video_url = data_json['aweme_list'][i]['video'][target_key]['url_list'][0]
                     video_name = re.sub(rstr, '', data_json['aweme_list'][i]['desc'])
-                    if translate_to_english:
-                        try:
-                            time.sleep(1)
-                            video_name = Translator.word_replace(video_name, word_dict)
-                            video_name = Translator.baiduAPI_translate(query_str=video_name, from_lang='zh',
-                                                                       to_lang='en')
-                        except:
-                            video_name = video_name
+
                     parsed_urls_names.append([video_url, video_name])
         except:
             pass

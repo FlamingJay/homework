@@ -1,7 +1,11 @@
+import re
+import time
+
 from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QListWidgetItem, QMessageBox, QTableWidgetItem
 from moviepy.video.io.VideoFileClip import VideoFileClip
 
 from download.DownloadThread import DownloadThread
+from download.Translator import baiduAPI_translate
 from editor.EditorThread import EditorThread
 from ui.LoadingDialog import LoadingDialog
 from ui.double_page import Ui_MainWindow
@@ -14,7 +18,6 @@ import os
 from ui.AccountDialog import AccountDialog
 from ui.TextCellDialog import TableCellDialog
 from ui.ComboxDialog import ComboxDialog
-
 
 class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self, parent=None):
@@ -43,8 +46,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.upload_parmas["accounts"] = self.__load_local_accounts()
         self.account_table.doubleClicked.connect(self.__change_cell)
 
-        # 对表格进行初始化
-
+        # 小工具
+        self.tool_params = dict()
 
     def __init_btn_click(self):
         '''
@@ -56,7 +59,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.web_confirm_btn.clicked.connect(self.__confirm_web)
         self.input_home_url.editingFinished.connect(
             lambda: self.__line_edit_change("download", "home_page_url", self.input_home_url.text()))
-        self.is_english_title.clicked.connect(self.__translate_to_english)
         self.download_save_btn.clicked.connect(lambda: self.__select_save_path("download", "save_path"))
         self.download_btn.clicked.connect(self.__download_thread)
         self.end_download_btn.clicked.connect(self.__stop_download)
@@ -105,6 +107,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # ------------- 账号管理相关  -----------------
         self.add_account_btn.clicked.connect(self.__account_add_row)
         self.delete_account_btn.clicked.connect(self.__account_remove_row)
+
+        # ------------- 其他小工具  -----------------
+        self.select_translate_dir.clicked.connect(lambda: self.__select_source_path("tool", "translate_path"))
+        self.run_translate.clicked.connect(self.__run_translate)
 
     def __line_edit_change(self, module, key, val):
         '''
@@ -178,6 +184,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         elif module == "upload":
             pass
+        elif module == "tool":
+            self.translate_path.setText(file_path)
 
     def __select_file(self, module, key):
         '''
@@ -213,9 +221,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         web = self.download_params["web"]
         home_page_url = self.download_params["home_page_url"]
         save_path = self.download_params["save_path"]
-        translate_to_english = self.download_params["translate_to_english"]
 
-        self.download_thread = DownloadThread(web, home_page_url, save_path, translate_to_english)
+
+        self.download_thread = DownloadThread(web, home_page_url, save_path)
         self.download_thread._download_signal.connect(self.__print_backlog)
         self.download_thread.start()
 
@@ -234,16 +242,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.loading_dialog.close()
         else:
             self.download_progress_bar.setValue(int(msg))  # 将线程的参数传入进度条
-
-    def __translate_to_english(self):
-        '''
-        下载是否翻译成英文
-        :return:
-        '''
-        if self.is_english_title.isChecked():
-            self.download_params["translate_to_english"] = True
-        else:
-            self.download_params["translate_to_english"] = False
 
     def __confirm_web(self):
         '''
@@ -265,7 +263,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.download_progress_bar.setValue(0)
         self.download_save_display.setText("")
         self.input_home_url.setText("")
-        self.is_english_title.setChecked(False)
         self.download_btn.setEnabled(True)
 
     def __stop_download(self):
@@ -750,10 +747,40 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.upload_parmas["accounts"][account][Params.account_info[col]] = content
         self.__rewrite_local_accounts_json()
 
-    def __drag_drop(self):
+    def __run_translate(self):
+        file_path = self.translate_path.toPlainText()
+        files = os.listdir(file_path)
+        count = len(files)
+        tmp = []
+        for i, file in enumerate(files):
+            if (i+1) % 10 == 0:
+                tmp_str = "\t".join(tmp)
+                try:
+                    res = baiduAPI_translate(tmp_str, "zh", "en")
+                    new_files = res.split("\t")
+                    for old_file, new_file in zip(tmp, new_files):
+                        new_file = re.sub('[^\u4e00-\u9fa5^a-z^A-Z^0-9\.\_ ]', '', new_file)
+                        os.rename(file_path + os.sep + old_file + ".mp4", file_path + os.sep + new_file + ".mp4")
+                    self.translate_progress_bar.setValue(((i + 1) / count) * 100)
+                except Exception:
+                    print("error translate")
+                finally:
+                    pass
+            else:
+                tmp.append(file[:-4])
 
-        x = self.merge_video_list.currentRow()
-        print("xx")
+        if len(tmp) > 0:
+            tmp_str = "\t".join(tmp)
+            try:
+                res = baiduAPI_translate(tmp_str, "zh", "en")
+
+                for new_file in res.split("\t"):
+                    os.rename(file_path + os.sep + file, file_path + os.sep + new_file)
+                self.translate_progress_bar.setValue(100)
+            except Exception:
+                print("error translate")
+            finally:
+                pass
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

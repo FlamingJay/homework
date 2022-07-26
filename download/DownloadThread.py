@@ -9,13 +9,12 @@ class DownloadThread(QThread):
     #  通过类成员对象定义信号对象
     _download_signal = pyqtSignal(int)
 
-    def __init__(self, web, home_page_url, save_path, translate_to_english):
+    def __init__(self, web, home_page_url, save_path):
         super(DownloadThread, self).__init__()
         self.website = web
         self.autoloader = self.__create_downloader__()
         self.target_link = home_page_url
         self.save_path = save_path
-        self.translate_to_english = translate_to_english
 
     def __create_downloader__(self):
         web = self.website
@@ -40,7 +39,7 @@ class DownloadThread(QThread):
 
         # 解析
         self._download_signal.emit(-1)
-        nickname, parsed_urls_names = self.autoloader.parseUrl(self.target_link, self.translate_to_english)
+        nickname, parsed_urls_names = self.autoloader.parseUrl(self.target_link)
         self._download_signal.emit(-2)
 
         video_count = len(parsed_urls_names)

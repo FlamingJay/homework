@@ -65,7 +65,7 @@ if __name__ == "__main__":
 
     # 解析参数
     accounts = dict()
-    root = os.path.abspath(os.path.join(os.getcwd(), ".."))
+    root = os.path.abspath(os.path.join(args.root, ".."))
     with open(root + os.sep + "resource" + os.sep + args.meta) as f:
         accounts = json.load(f)
 
