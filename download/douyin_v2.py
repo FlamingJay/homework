@@ -115,7 +115,7 @@ class DouyinDownloader(AutoDownLoader, ABC):
 
         with closing(requests.get(video_url, headers=self.headers, stream=True)) as response:
             chunk_size = 102400
-            video_name = video_name[:min(len(video_name), 50)]
+            video_name = video_name[:min(len(video_name), 100)]
             if response.status_code == 200:
                 i = 0
                 while os.path.exists(save_path + os.sep + video_name + '.mp4'):

@@ -56,6 +56,7 @@ class YouTubeUploaderLong:
     def __upload(self) -> (bool, Optional[str]):
         # 要上传视频的路径
         absolute_video_path = self.video_path
+        file_name = self.video_path.split("\\")[-1][:-4]
 
         # 打开相应的网页
         self.logger.info("step 3: open the YOUTUBE website....")
@@ -74,15 +75,18 @@ class YouTubeUploaderLong:
         self.logger.info("step 5: fill in the title and desc....")
         title_ele = self.browser.find_element_by_id(YOUTUBE_CONSTANT.TEXTBOX)
         if self.use_file_title:
-            print("使用默认文件标题")
-            self.browser.driver.implicitly_wait(5)
-            ActionChains(self.browser.driver).move_to_element(title_ele).click(title_ele).send_keys("  " + self.title_tags).perform()
-            time.sleep(YOUTUBE_CONSTANT.USER_WAITING_TIME)
-        else:
+            upload_title = "  ".join([file_name, self.title_tags])
             ActionChains(self.browser.driver).move_to_element(title_ele).click(title_ele)
             title_ele.clear()
             self.browser.driver.implicitly_wait(5)
-            ActionChains(self.browser.driver).move_to_element(title_ele).click(title_ele).send_keys("  ".join([self.title, self.title_tags])).perform()
+            ActionChains(self.browser.driver).move_to_element(title_ele).click(title_ele).send_keys(upload_title[:min(len(upload_title), 95)]).perform()
+            time.sleep(YOUTUBE_CONSTANT.USER_WAITING_TIME)
+        else:
+            upload_title = "  ".join([self.title, self.title_tags])
+            ActionChains(self.browser.driver).move_to_element(title_ele).click(title_ele)
+            title_ele.clear()
+            self.browser.driver.implicitly_wait(5)
+            ActionChains(self.browser.driver).move_to_element(title_ele).click(title_ele).send_keys(upload_title[:min(len(upload_title), 95)]).perform()
             time.sleep(YOUTUBE_CONSTANT.USER_WAITING_TIME)
 
         desc_ele = self.browser.find_elements_by_id(YOUTUBE_CONSTANT.TEXTBOX)[1]

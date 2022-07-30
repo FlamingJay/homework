@@ -82,6 +82,7 @@ if __name__ == "__main__":
         if target is not "":
             if args.video_type == "short":
                 print("short")
+                add_hist(hist_path, target)
                 uploader = YouTubeUploaderShort(pkl_path=resources,
                                             account=args.account,
                                             video_path=args.video_path + os.sep + target,
@@ -95,6 +96,7 @@ if __name__ == "__main__":
                 uploader.upload()
             elif args.video_type == "long":
                 print("long")
+                add_hist(hist_path, target)
                 uploader = YouTubeUploaderLong(pkl_path=resources,
                                                account=args.account,
                                                video_path=args.video_path + os.sep + target,
@@ -107,12 +109,13 @@ if __name__ == "__main__":
                                            )
                 print("ready to upload")
                 uploader.upload()
-        add_hist(hist_path, target)
     elif args.web == "tiktok":
         hist_path = resources + os.sep + "tiktok_" + args.account + ".txt"
         target = pick_video(hist_path, args.video_path)
 
         if target is not "":
+            print("tiktok")
+            add_hist(hist_path, target)
             uploader = TiktokUploader(pkl_path=resources,
                                       account=args.account,
                                       video_path=args.video_path + os.sep + target,
@@ -124,4 +127,3 @@ if __name__ == "__main__":
                                       use_file_title=args.use_file_title
                                       )
             uploader.upload()
-        add_hist(hist_path, target)

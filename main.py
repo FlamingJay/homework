@@ -1,11 +1,12 @@
 import re
 import time
 
-from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QListWidgetItem, QMessageBox, QTableWidgetItem
+from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QListWidgetItem, QMessageBox, QTableWidgetItem, \
+    QProgressDialog
 from moviepy.video.io.VideoFileClip import VideoFileClip
 
 from download.DownloadThread import DownloadThread
-from download.Translator import baiduAPI_translate
+from download.TranslateThread import TranslateThread
 from editor.EditorThread import EditorThread
 from ui.LoadingDialog import LoadingDialog
 from ui.double_page import Ui_MainWindow
@@ -109,8 +110,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.delete_account_btn.clicked.connect(self.__account_remove_row)
 
         # ------------- 其他小工具  -----------------
-        self.select_translate_dir.clicked.connect(lambda: self.__select_source_path("tool", "translate_path"))
-        self.run_translate.clicked.connect(self.__run_translate)
+        self.select_translate_dir_btn.clicked.connect(lambda: self.__select_source_path("tool", "translate_path"))
+        self.run_translate_btn.clicked.connect(self.__run_translate)
 
     def __line_edit_change(self, module, key, val):
         '''
@@ -676,7 +677,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 if key == "meta":
                     content.append("--" + key + " " + "account_conf.json")
                 else:
-                    content.append("--" + key + " " + accounts[account][key])
+                    content.append("--" + key + " " + "\"" + accounts[account][key] + "\"")
 
             content = " ".join([r"python " + file, "--root " + root, " ".join(content)])
             with open("./resource/" + file_name + ".bat", "w", encoding="utf-8") as fwrite:
@@ -749,38 +750,22 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def __run_translate(self):
         file_path = self.translate_path.toPlainText()
-        files = os.listdir(file_path)
-        count = len(files)
-        tmp = []
-        for i, file in enumerate(files):
-            if (i+1) % 10 == 0:
-                tmp_str = "\t".join(tmp)
-                try:
-                    res = baiduAPI_translate(tmp_str, "zh", "en")
-                    new_files = res.split("\t")
-                    for old_file, new_file in zip(tmp, new_files):
-                        new_file = re.sub('[^\u4e00-\u9fa5^a-z^A-Z^0-9\.\_ ]', '', new_file)
-                        os.rename(file_path + os.sep + old_file + ".mp4", file_path + os.sep + new_file + ".mp4")
-                    self.translate_progress_bar.setValue(((i + 1) / count) * 100)
-                except Exception:
-                    print("error translate")
-                finally:
-                    pass
-            else:
-                tmp.append(file[:-4])
+        self.translate_thread = TranslateThread(file_path)
+        self.translate_thread._translate_signal.connect(self.__translate_progress)
+        self.translate_thread.start()
 
-        if len(tmp) > 0:
-            tmp_str = "\t".join(tmp)
-            try:
-                res = baiduAPI_translate(tmp_str, "zh", "en")
+        self.run_translate_btn.setEnabled(False)
+        self.translate_thread.finished.connect(self.__reset_translate_params)
 
-                for new_file in res.split("\t"):
-                    os.rename(file_path + os.sep + file, file_path + os.sep + new_file)
-                self.translate_progress_bar.setValue(100)
-            except Exception:
-                print("error translate")
-            finally:
-                pass
+    def __translate_progress(self, msg):
+        self.translate_progress_bar.setValue(msg)
+
+    def __reset_translate_params(self):
+        QMessageBox.information(self.centralwidget, "翻译", "亲爱的杜总，翻译完了哈")
+        self.translate_progress_bar.setValue(0)
+        self.run_translate_btn.setEnabled(True)
+        self.translate_path.setText("")
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

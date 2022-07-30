@@ -52,7 +52,7 @@ class YoutubeDownloader(AutoDownLoader, ABC):
             video_name = yt.title
 
             # 判断重名、长度等
-            video_name = video_name[:min(len(video_name), 50)]
+            video_name = video_name[:min(len(video_name), 100)]
             i = 0
             while os.path.exists(save_path + os.sep + video_name + '.mp4'):
                 video_name = video_name.replace("_" + str(i), "")

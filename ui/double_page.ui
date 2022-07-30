@@ -1058,14 +1058,14 @@
        <rect>
         <x>30</x>
         <y>30</y>
-        <width>511</width>
-        <height>181</height>
+        <width>391</width>
+        <height>171</height>
        </rect>
       </property>
       <property name="title">
        <string>标题翻译</string>
       </property>
-      <widget class="QPushButton" name="select_translate_dir">
+      <widget class="QPushButton" name="select_translate_dir_btn">
        <property name="geometry">
         <rect>
          <x>20</x>
@@ -1083,7 +1083,7 @@
         <string>选择目录</string>
        </property>
       </widget>
-      <widget class="QPushButton" name="run_translate">
+      <widget class="QPushButton" name="run_translate_btn">
        <property name="geometry">
         <rect>
          <x>20</x>
@@ -1106,7 +1106,7 @@
         <rect>
          <x>120</x>
          <y>50</y>
-         <width>256</width>
+         <width>251</width>
          <height>31</height>
         </rect>
        </property>
@@ -1121,7 +1121,7 @@
         <rect>
          <x>120</x>
          <y>100</y>
-         <width>261</width>
+         <width>251</width>
          <height>31</height>
         </rect>
        </property>
@@ -1132,6 +1132,9 @@
        </property>
        <property name="value">
         <number>0</number>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
        </property>
       </widget>
      </widget>
