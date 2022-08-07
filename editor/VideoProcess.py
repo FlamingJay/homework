@@ -49,20 +49,26 @@ def single_process(args):
         if back_size[0] > back_size[1]:
             new_height = 1080 * background_pic_rate
             new_width = new_height * video.size[0] / video.size[1]
+            background_clip = background_clip.resize((1920, 1080))
         else:
             new_width = 1080 * background_pic_rate
             new_height = new_width * video.size[1] / video.size[0]
+            background_clip = background_clip.resize((1080, 1920))
         video = video.resize((new_width, new_height))
+        video = video.set_position('center')
         # 叠层
         video = CompositeVideoClip([background_clip, video, water_clip])
     elif background_pic is not None:
         if back_size[0] > back_size[1]:
             new_height = 1080 * background_pic_rate
             new_width = new_height * video.size[0] / video.size[1]
+            background_clip = background_clip.resize((1920, 1080))
         else:
             new_width = 1080 * background_pic_rate
             new_height = new_width * video.size[1] / video.size[0]
+            background_clip = background_clip.resize((1080, 1920))
         video = video.resize((new_width, new_height))
+        video = video.set_position('center')
         # 叠层
         video = CompositeVideoClip([background_clip, video])
 

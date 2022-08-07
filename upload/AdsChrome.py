@@ -1,17 +1,23 @@
+import sys
+
+import requests
 import undetected_chromedriver.v2 as uc
 import tldextract
 import ssl
 import pickle, os, time
 RANDOM_USERAGENT = 'random'
-
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
 ssl._create_default_https_context = ssl._create_unverified_context
-class ChromeDriver(object):
+
+class AdsChromeDriver(object):
     '''
     自定义驱动
     '''
     def __init__(self,
                  cookies_folder_path: str,
                  extensions_folder_path: str,
+                 ads_id: str,
                  host: str = None,
                  port: int = None,
                  private: bool = False,
@@ -23,9 +29,16 @@ class ChromeDriver(object):
                  load_proxy_checker_website: bool = False
                  ):
         self.cookies_folder_path = cookies_folder_path
-        options = uc.ChromeOptions()
-        # options.add_argument("--headless")
-        self.driver = uc.Chrome(version_main=91, options=options)
+        open_url = "http://localhost:50325/api/v1/browser/start?user_id=" + ads_id
+        resp = requests.get(open_url).json()
+        if resp["code"] != 0:
+            print(resp["msg"])
+            print("please check ads_id")
+            sys.exit()
+        chrome_driver = resp["data"]["webdriver"]
+        chrome_options = Options()
+        chrome_options.add_experimental_option("debuggerAddress", resp["data"]["ws"]["selenium"])
+        self.driver = webdriver.Chrome(chrome_driver, options=chrome_options)
         if full_screen:
             self.driver.fullscreen_window()
 

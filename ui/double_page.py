@@ -292,7 +292,7 @@ class Ui_MainWindow(object):
         self.account_table.setHorizontalScrollMode(QtWidgets.QAbstractItemView.ScrollPerItem)
         self.account_table.setShowGrid(True)
         self.account_table.setObjectName("account_table")
-        self.account_table.setColumnCount(10)
+        self.account_table.setColumnCount(11)
         self.account_table.setRowCount(0)
         item = QtWidgets.QTableWidgetItem()
         self.account_table.setHorizontalHeaderItem(0, item)
@@ -314,6 +314,8 @@ class Ui_MainWindow(object):
         self.account_table.setHorizontalHeaderItem(8, item)
         item = QtWidgets.QTableWidgetItem()
         self.account_table.setHorizontalHeaderItem(9, item)
+        item = QtWidgets.QTableWidgetItem()
+        self.account_table.setHorizontalHeaderItem(10, item)
         self.account_table.horizontalHeader().setCascadingSectionResizes(False)
         self.account_table.horizontalHeader().setHighlightSections(False)
         self.account_table.horizontalHeader().setSortIndicatorShown(False)
@@ -370,7 +372,7 @@ class Ui_MainWindow(object):
         MainWindow.setStatusBar(self.statusbar)
 
         self.retranslateUi(MainWindow)
-        self.tabWidget.setCurrentIndex(0)
+        self.tabWidget.setCurrentIndex(1)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
@@ -439,6 +441,8 @@ class Ui_MainWindow(object):
         item.setText(_translate("MainWindow", "video_type"))
         item = self.account_table.horizontalHeaderItem(9)
         item.setText(_translate("MainWindow", "user_file_title"))
+        item = self.account_table.horizontalHeaderItem(10)
+        item.setText(_translate("MainWindow", "finger_web"))
         self.add_account_btn.setText(_translate("MainWindow", "+"))
         self.delete_account_btn.setText(_translate("MainWindow", "-"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.account_page), _translate("MainWindow", "账号管理"))

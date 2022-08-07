@@ -11,8 +11,8 @@ class Params:
 
     upload_keys = ["add_finished"]
 
-    account_info = ["account", "web", "title", "description", "caption", "title_tags", "tags",  "video_path", "video_type", "use_file_title"]
+    account_info = ["account", "web", "title", "description", "caption", "title_tags", "tags",  "video_path", "video_type", "use_file_title", "finger_web"]
 
-    bat_info = ["account", "web", "meta", "video_path", "video_type", "use_file_title"]
+    bat_info = ["account", "web", "meta", "video_path", "video_type", "use_file_title", "finger_web"]
 
     file_name_black_char = ['"', '*', '<', '>', '?', '\\', '|', '/', ':', '：']

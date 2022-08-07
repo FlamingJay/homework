@@ -61,6 +61,8 @@ if __name__ == "__main__":
 
     parser.add_argument("--use_file_title", help="use_file_title", required=True)
 
+    parser.add_argument("--finger_web", help="use_file_title", required=True)
+
     args = parser.parse_args()
 
     # 解析参数
@@ -91,7 +93,8 @@ if __name__ == "__main__":
                                             description=description,
                                             tags=tags,
                                             title_tags=title_tags,
-                                            use_file_title=args.use_file_title
+                                            use_file_title=args.use_file_title,
+                                            finger_web=args.finger_web
                                            )
                 uploader.upload()
             elif args.video_type == "long":
@@ -105,7 +108,8 @@ if __name__ == "__main__":
                                                description=description,
                                                tags=tags,
                                                title_tags=title_tags,
-                                               use_file_title=args.use_file_title
+                                               use_file_title=args.use_file_title,
+                                               finger_web=args.finger_web
                                            )
                 print("ready to upload")
                 uploader.upload()
@@ -124,6 +128,7 @@ if __name__ == "__main__":
                                       description=description,
                                       tags=tags,
                                       title_tags=title_tags,
-                                      use_file_title=args.use_file_title
+                                      use_file_title=args.use_file_title,
+                                      finger_web=args.finger_web
                                       )
             uploader.upload()

@@ -29,7 +29,7 @@
      </font>
     </property>
     <property name="currentIndex">
-     <number>0</number>
+     <number>1</number>
     </property>
     <property name="iconSize">
      <size>
@@ -1028,6 +1028,11 @@
        <column>
         <property name="text">
          <string>user_file_title</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>finger_web</string>
         </property>
        </column>
       </widget>

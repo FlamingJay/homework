@@ -46,22 +46,26 @@ class MergeEditor(AutoEditor):
             if back_size[0] > back_size[1]:
                 new_height = 1080 * self.background_pic_rate
                 new_width = new_height * all_videos.size[0] / all_videos.size[1]
+                background_clip = background_clip.resize((1920, 1080))
             else:
                 new_width = 1080 * self.background_pic_rate
                 new_height = new_width * all_videos.size[1] / all_videos.size[0]
+                background_clip = background_clip.resize((1080, 1920))
             all_videos = all_videos.resize((new_width, new_height))
-
+            all_videos = all_videos.set_position('center')
             # 叠层
             all_videos = CompositeVideoClip([background_clip, all_videos, water_clip])
         elif self.background_pic is not None:
             if back_size[0] > back_size[1]:
                 new_height = 1080 * self.background_pic_rate
                 new_width = new_height * all_videos.size[0] / all_videos.size[1]
+                background_clip = background_clip.resize((1920, 1080))
             else:
                 new_width = 1080 * self.background_pic_rate
                 new_height = new_width * all_videos.size[1] / all_videos.size[0]
+                background_clip = background_clip.resize((1080, 1920))
             all_videos = all_videos.resize((new_width, new_height))
-
+            all_videos = all_videos.set_position('center')
             all_videos = CompositeVideoClip([background_clip, all_videos])
         elif self.water_logo is not None:
             all_videos = CompositeVideoClip([all_videos, water_clip])

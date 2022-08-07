@@ -7,11 +7,12 @@ import json
 import logging
 from Constant import YOUTUBE_CONSTANT
 from ChromeDriver import ChromeDriver
+from AdsChrome import AdsChromeDriver
 logging.basicConfig()
 
 
 class YouTubeUploaderLong:
-    def __init__(self, pkl_path: str, account: str, video_path: str, title: str, caption: str, description: str, tags: str, title_tags: str, use_file_title:str) -> None:
+    def __init__(self, pkl_path: str, account: str, video_path: str, title: str, caption: str, description: str, tags: str, title_tags: str, use_file_title: str, finger_web: str) -> None:
         self.account = account
         self.video_path = video_path
         self.title = title
@@ -21,7 +22,10 @@ class YouTubeUploaderLong:
         self.title_tags = title_tags
         self.use_file_title = use_file_title == "true"
         current_working_dir = pkl_path
-        self.browser = ChromeDriver(current_working_dir, current_working_dir)
+        if finger_web == "":
+            self.browser = ChromeDriver(current_working_dir, current_working_dir)
+        else:
+            self.browser = AdsChromeDriver(current_working_dir, current_working_dir, finger_web)
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(logging.DEBUG)
 
