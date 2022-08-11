@@ -597,6 +597,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     final_merge_videos.append(sub_merge_videos)
 
         else:
+            if material_num is None:
+                material_num = len(merge_ready_videos)
             group = int(len(merge_ready_videos) / material_num)
             for i in range(group):
                 sub_ready_videos = merge_ready_videos[i * material_num: (i + 1) * material_num]
