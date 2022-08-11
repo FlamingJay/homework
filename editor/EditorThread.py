@@ -36,7 +36,11 @@ class EditorThread(QThread):
         self.wait()
 
     def run(self) -> None:
-        self.editor.videos_edit(self.source_videos_list)
+        if self.editor_type == "single":
+            self.editor.videos_edit(self.source_videos_list)
+        else:
+            for videos in self.source_videos_list:
+                self.editor.videos_edit(videos)
 
     def stop(self):
         self.terminate()

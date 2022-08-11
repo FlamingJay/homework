@@ -235,9 +235,6 @@ class Ui_MainWindow(object):
         self.select_merge_source_path_btn = QtWidgets.QPushButton(self.groupBox_6)
         self.select_merge_source_path_btn.setGeometry(QtCore.QRect(10, 60, 75, 31))
         self.select_merge_source_path_btn.setObjectName("select_merge_source_path_btn")
-        self.label_total_duration = QtWidgets.QLabel(self.groupBox_6)
-        self.label_total_duration.setGeometry(QtCore.QRect(360, 61, 54, 31))
-        self.label_total_duration.setObjectName("label_total_duration")
         self.select_save_path_merge_btn = QtWidgets.QPushButton(self.groupBox_6)
         self.select_save_path_merge_btn.setGeometry(QtCore.QRect(10, 240, 75, 31))
         self.select_save_path_merge_btn.setObjectName("select_save_path_merge_btn")
@@ -262,9 +259,6 @@ class Ui_MainWindow(object):
         self.editor_merge_source_path_display = QtWidgets.QTextBrowser(self.groupBox_6)
         self.editor_merge_source_path_display.setGeometry(QtCore.QRect(100, 60, 231, 31))
         self.editor_merge_source_path_display.setObjectName("editor_merge_source_path_display")
-        self.video_duration_display = QtWidgets.QTextBrowser(self.groupBox_6)
-        self.video_duration_display.setGeometry(QtCore.QRect(410, 60, 81, 31))
-        self.video_duration_display.setObjectName("video_duration_display")
         self.editor_merge_save_path_display = QtWidgets.QTextBrowser(self.groupBox_6)
         self.editor_merge_save_path_display.setGeometry(QtCore.QRect(100, 240, 231, 31))
         self.editor_merge_save_path_display.setObjectName("editor_merge_save_path_display")
@@ -272,6 +266,15 @@ class Ui_MainWindow(object):
         self.top_10_status.setGeometry(QtCore.QRect(280, 30, 211, 21))
         self.top_10_status.setText("")
         self.top_10_status.setObjectName("top_10_status")
+        self.meterial_num_btn = QtWidgets.QPushButton(self.groupBox_6)
+        self.meterial_num_btn.setGeometry(QtCore.QRect(370, 60, 71, 31))
+        self.meterial_num_btn.setObjectName("meterial_num_btn")
+        self.material_num_display = QtWidgets.QTextBrowser(self.groupBox_6)
+        self.material_num_display.setGeometry(QtCore.QRect(450, 60, 51, 31))
+        font = QtGui.QFont()
+        font.setPointSize(12)
+        self.material_num_display.setFont(font)
+        self.material_num_display.setObjectName("material_num_display")
         self.tabWidget.addTab(self.video_page, "")
         self.account_page = QtWidgets.QWidget()
         self.account_page.setObjectName("account_page")
@@ -372,7 +375,7 @@ class Ui_MainWindow(object):
         MainWindow.setStatusBar(self.statusbar)
 
         self.retranslateUi(MainWindow)
-        self.tabWidget.setCurrentIndex(1)
+        self.tabWidget.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
@@ -415,11 +418,16 @@ class Ui_MainWindow(object):
         self.label_merge_videos.setText(_translate("MainWindow", "合集类型"))
         self.top10_merge_btn.setText(_translate("MainWindow", "top10"))
         self.select_merge_source_path_btn.setText(_translate("MainWindow", "原视频目录"))
-        self.label_total_duration.setText(_translate("MainWindow", "总时长："))
         self.select_save_path_merge_btn.setText(_translate("MainWindow", "保存目录"))
         self.run_merge_btn.setText(_translate("MainWindow", "开始剪辑"))
         self.delete_merge_btn.setText(_translate("MainWindow", "-"))
         self.add_merge_btn.setText(_translate("MainWindow", "+"))
+        self.meterial_num_btn.setText(_translate("MainWindow", "素材数量"))
+        self.material_num_display.setHtml(_translate("MainWindow", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'SimSun\'; font-size:12pt; font-weight:400; font-style:normal;\">\n"
+"<p align=\"center\" style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:10pt;\"><br /></p></body></html>"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.video_page), _translate("MainWindow", "视频编辑"))
         item = self.account_table.horizontalHeaderItem(0)
         item.setText(_translate("MainWindow", "account"))

@@ -20,6 +20,7 @@ from ui.AccountDialog import AccountDialog
 from ui.TextCellDialog import TableCellDialog
 from ui.ComboxDialog import ComboxDialog
 
+
 class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self, parent=None):
         super(MainWindow, self).__init__(parent)
@@ -104,6 +105,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.delete_merge_btn.clicked.connect(self.__merge_remove_row)
         self.select_save_path_merge_btn.clicked.connect(lambda: self.__select_save_path("editor", "merge_save_path"))
         self.run_merge_btn.clicked.connect(self.__run_merge_editor)
+        self.meterial_num_btn.clicked.connect(self.__input_material_num)
 
         # ------------- 账号管理相关  -----------------
         self.add_account_btn.clicked.connect(self.__account_add_row)
@@ -420,10 +422,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     item.setWhatsThis(str(i))
                     self.merge_video_list.addItem(item)
 
-                self.video_duration_display.setText(str(self.editor_parmas["total_duration"]))
-                self.video_duration_display.setStyleSheet("color:red;font-size:24px")
-                self.video_duration_display.update()
-
                 self.editor_merge_source_path_display.setText(";".join(files))
         elif module == "upload":
             pass
@@ -463,10 +461,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         item.setWhatsThis(str(index))
         self.merge_video_list.addItem(item)
 
-        self.video_duration_display.setText(str(self.editor_parmas["total_duration"]))
-        self.video_duration_display.setStyleSheet("color:red;font-size:24px")
-        self.video_duration_display.update()
-
     def __merge_remove_row(self):
         '''
         单个视频去除
@@ -484,10 +478,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         # 更新总时长
         self.editor_parmas["total_duration"] -= self.editor_parmas["merge_video_duration"][int(index)]
-        self.video_duration_display.setText(
-            str(self.editor_parmas["total_duration"]))
-        self.video_duration_display.setStyleSheet("color:red;font-size:24px")
-        self.video_duration_display.update()
 
         # 若已经都没有了，则重置源目录相关的参数
         if len(self.merge_video_list) == 0:
@@ -495,7 +485,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.editor_parmas["total_duration"] = 0
             self.editor_parmas["merge_video_duration"] = None
             self.merge_video_list.clear()
-            self.video_duration_display.setText("")
             self.editor_merge_source_path_display.setText("")
 
             return
@@ -546,10 +535,20 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         for param in Params.merge_editor_keys:
             self.editor_parmas[param] = None
         self.merge_video_list.clear()
-        self.video_duration_display.setText("")
         self.editor_merge_source_path_display.setText("")
         self.editor_merge_save_path_display.setText("")
         self.run_merge_btn.setEnabled(True)
+
+    def __input_material_num(self):
+        # 弹出窗口
+        self.material_dialog = TableCellDialog("")
+        self.material_dialog.show()
+        self.material_dialog._text_cell_signal.connect(self.__change_material_num)
+
+    def __change_material_num(self, connent):
+        num = int(connent)
+        self.editor_parmas["material_num"] = num
+        self.material_num_display.setText(connent)
 
     def __run_merge_editor(self):
         '''
@@ -562,24 +561,50 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         merge_ready_videos = [self.editor_parmas["merge_ready_videos"][index] for index in index_list]
         final_merge_videos = []
+        material_num = self.editor_parmas['material_num']
 
         if self.editor_parmas["merge_type"] == "top10":
-            if len(self.editor_parmas["merge_ready_videos"]) < 10:
+            if len(merge_ready_videos) < 10:
                 # todo: 提示数量小于10
                 QMessageBox.critical(self.centralwidget, "错误", "视频数不足10个")
                 return
-            elif len(self.editor_parmas["merge_ready_videos"]) > 10:
+            elif len(merge_ready_videos) > 10:
                 # todo: 提示数量大于10
                 QMessageBox.critical(self.centralwidget, "错误", "视频数超过10个")
                 return
             else:
-                final_merge_videos.append(self.editor_parmas["merge_top10_path"][-2])
-                for i in range(len(self.editor_parmas["merge_ready_videos"])):
-                    final_merge_videos.append(self.editor_parmas["merge_top10_path"][i])
-                    final_merge_videos.append(self.editor_parmas["merge_ready_videos"][i])
-                final_merge_videos.append(self.editor_parmas["merge_top10_path"][-1])
+                material_num = 10
+
+                group = int(len(merge_ready_videos) / material_num)
+                for i in range(group):
+                    sub_merge_videos = []
+                    sub_ready_videos = merge_ready_videos[i * material_num: (i + 1) * material_num]
+                    sub_merge_videos.append(self.editor_parmas["merge_top10_path"][-2])
+                    for i in range(10):
+                        sub_merge_videos.append(self.editor_parmas["merge_top10_path"][i])
+                        sub_merge_videos.append(sub_ready_videos[i])
+                    sub_merge_videos.append(self.editor_parmas["merge_top10_path"][-1])
+                    final_merge_videos.append(sub_merge_videos)
+
+                if len(merge_ready_videos) % material_num > 0:
+                    sub_merge_videos = []
+                    sub_ready_videos = merge_ready_videos[-material_num:]
+                    sub_merge_videos.append(self.editor_parmas["merge_top10_path"][-2])
+                    for i in range(10):
+                        sub_merge_videos.append(self.editor_parmas["merge_top10_path"][i])
+                        sub_merge_videos.append(sub_ready_videos[i])
+                    sub_merge_videos.append(self.editor_parmas["merge_top10_path"][-1])
+                    final_merge_videos.append(sub_merge_videos)
+
         else:
-            final_merge_videos = merge_ready_videos
+            group = int(len(merge_ready_videos) / material_num)
+            for i in range(group):
+                sub_ready_videos = merge_ready_videos[i * material_num: (i + 1) * material_num]
+                final_merge_videos.append(sub_ready_videos)
+            if len(merge_ready_videos) % material_num > 0:
+                sub_ready_videos = merge_ready_videos[-material_num:]
+                final_merge_videos.append(sub_ready_videos)
+
 
         background_pic = self.editor_parmas["background_pic"]
         background_pic_rate = self.editor_parmas["background_pic_rate"]
@@ -598,7 +623,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.merge_editor_thread.start()
         self.run_merge_btn.setEnabled(False)
         self.merge_editor_thread.finished.connect(self.__reset_merge_params)
-
 
     def __account_add_row(self):
         '''
