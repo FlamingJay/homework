@@ -1,3 +1,4 @@
+import random
 import re
 import time
 
@@ -100,6 +101,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.merge_type_btn_group.addButton(self.normal_merge_btn, 11)
         self.merge_type_btn_group.addButton(self.top10_merge_btn, 12)
         self.merge_type_btn_group.setExclusive(True)
+
         self.select_merge_source_path_btn.clicked.connect(lambda: self.__select_multi_files("editor", "merge_source_path"))
         self.add_merge_btn.clicked.connect(self.__merge_add_row)
         self.delete_merge_btn.clicked.connect(self.__merge_remove_row)
@@ -560,6 +562,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             index_list.append(int(self.merge_video_list.item(i).whatsThis()))
 
         merge_ready_videos = [self.editor_parmas["merge_ready_videos"][index] for index in index_list]
+        if self.shuffle_order_btn.isChecked():
+            random.shuffle(merge_ready_videos)
+
         final_merge_videos = []
         material_num = self.editor_parmas['material_num']
 
@@ -567,10 +572,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             if len(merge_ready_videos) < 10:
                 # todo: 提示数量小于10
                 QMessageBox.critical(self.centralwidget, "错误", "视频数不足10个")
-                return
-            elif len(merge_ready_videos) > 10:
-                # todo: 提示数量大于10
-                QMessageBox.critical(self.centralwidget, "错误", "视频数超过10个")
                 return
             else:
                 material_num = 10
@@ -606,7 +607,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             if len(merge_ready_videos) % material_num > 0:
                 sub_ready_videos = merge_ready_videos[-material_num:]
                 final_merge_videos.append(sub_ready_videos)
-
 
         background_pic = self.editor_parmas["background_pic"]
         background_pic_rate = self.editor_parmas["background_pic_rate"]

@@ -275,6 +275,9 @@ class Ui_MainWindow(object):
         font.setPointSize(12)
         self.material_num_display.setFont(font)
         self.material_num_display.setObjectName("material_num_display")
+        self.shuffle_order_btn = QtWidgets.QRadioButton(self.groupBox_6)
+        self.shuffle_order_btn.setGeometry(QtCore.QRect(290, 30, 89, 21))
+        self.shuffle_order_btn.setObjectName("shuffle_order_btn")
         self.tabWidget.addTab(self.video_page, "")
         self.account_page = QtWidgets.QWidget()
         self.account_page.setObjectName("account_page")
@@ -428,6 +431,7 @@ class Ui_MainWindow(object):
 "p, li { white-space: pre-wrap; }\n"
 "</style></head><body style=\" font-family:\'SimSun\'; font-size:12pt; font-weight:400; font-style:normal;\">\n"
 "<p align=\"center\" style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:10pt;\"><br /></p></body></html>"))
+        self.shuffle_order_btn.setText(_translate("MainWindow", "乱序"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.video_page), _translate("MainWindow", "视频编辑"))
         item = self.account_table.horizontalHeaderItem(0)
         item.setText(_translate("MainWindow", "account"))
