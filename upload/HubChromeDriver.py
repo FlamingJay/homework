@@ -1,17 +1,25 @@
-import undetected_chromedriver.v2 as uc
+import sys
+
+from selenium.webdriver.chrome.service import Service
 import tldextract
+import socket
 import ssl
 import pickle, os, time
+import json
+import uuid
 RANDOM_USERAGENT = 'random'
-
+from selenium import webdriver
+import traceback
 ssl._create_default_https_context = ssl._create_unverified_context
-class ChromeDriver(object):
+
+class HubChromeDriver(object):
     '''
     自定义驱动
     '''
     def __init__(self,
                  cookies_folder_path: str,
                  extensions_folder_path: str,
+                 container_name: str,
                  host: str = None,
                  port: int = None,
                  private: bool = False,
@@ -23,9 +31,65 @@ class ChromeDriver(object):
                  load_proxy_checker_website: bool = False
                  ):
         self.cookies_folder_path = cookies_folder_path
-        options = uc.ChromeOptions()
-        # options.add_argument("--headless")
-        self.driver = uc.Chrome(version_main=91, options=options)
+        # 端口
+        socket_port = 22558
+        group_name = '18946079633的团队'
+        api_key = '12b1d1760bc0b886a5d40e87c75e94922398eb8095c21e16b4498d562aca39693cbbbb1378d32bc6e4ea7341238612dc'
+        # 调用参数
+        data1 = {
+            'userInfo': '{\'apiKey\': \'%s\', \'loginGroupName\': \'%s\'}' % (api_key, group_name),
+            'action': 'startBrowserByName',
+            'browserName': container_name,
+            'isHeadless': 0,
+            'requestId': str(uuid.uuid4()),
+            'isWebDriverReadOnlyMode': 0
+        }
+
+        print('初始化参数...')
+        # 发送请求
+        r = self.send_socket(data1, socket_port)
+        if r.get('statusCode') == 0:
+            print('正在启动环境...')
+            store_port = r.get('debuggingPort')
+        else:
+            print('环境启动失败')
+            exit()
+
+        options = webdriver.ChromeOptions()
+        options.add_argument('--disable-gpu')
+        options.add_experimental_option("debuggerAddress", '127.0.0.1:' + str(store_port))
+        driver_path = 'D:/Chrome/chromedriver.exe'
+        s = Service(driver_path)
+
+        self.driver = webdriver.Chrome(service=s, options=options)
+
+        # 初始化WebDriver
+        print('初始化WebDriver...')
+        # 打开环境检测页
+        self.driver.get('chrome-extension://%s/index.html' % r.get('backgroundPluginId'))
+        print('正在检测环境安全...')
+        wait_s = 1
+        # 检测环境是否安全，然后运行自己的逻辑
+        while True:
+            if wait_s >= 30:
+                print('===>环境安全检测等待时间超过30秒，退出后续操作')
+                break
+            data2 = {
+                'userInfo': '{\'apiKey\': \'%s\'}' % api_key,
+                'action': 'getIsEnterStore',
+                'containerName': container_name,
+                'requestId': str(uuid.uuid4()),
+            }
+            # 发送请求
+            r = self.send_socket(data2, socket_port)
+            if r.get('isEnterStore'):
+                print('环境检测通过')
+                # 环境检测通过后，可执行自己的脚本逻辑
+                self.driver.execute_script('window.open(\'https://www.baidu.com/\');')
+                break
+            time.sleep(1)
+            wait_s += 1
+
         if full_screen:
             self.driver.fullscreen_window()
 
@@ -71,6 +135,22 @@ class ChromeDriver(object):
                 time.sleep(0.5)
                 self.driver.switch_to.window(self.driver.window_handles[-1])
                 self.driver.close()
+
+    def send_socket(self, params, socket_port):
+        try:
+            client = socket.socket()
+            client.settimeout(300)  # 超时时间
+            client.connect(('127.0.0.1', socket_port))
+            # 参数后需拼接上  + b'\r\n'，不可删除
+            s = json.dumps(params).encode('utf-8') + b'\r\n'
+            client.sendall(s)
+            rec = client.recv(1024).decode()
+            client.shutdown(2)
+            # 返回值后面同样存在 '\r\n'，需删除后方可正常转为json
+            return json.loads(str(rec).replace('\r\n', ''))
+        except Exception as err:
+            print(traceback.print_exc())
+            print(err)
 
     def get(self, url: str) -> bool:
         clean_current = self.driver.current_url.replace('https://', '').replace('www.', '').strip('/')

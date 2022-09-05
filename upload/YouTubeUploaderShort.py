@@ -6,7 +6,7 @@ from collections import defaultdict
 import json
 import logging
 from Constant import YOUTUBE_CONSTANT
-from AdsChrome import AdsChromeDriver
+from HubChromeDriver import HubChromeDriver
 from ChromeDriver import ChromeDriver
 logging.basicConfig()
 
@@ -25,7 +25,7 @@ class YouTubeUploaderShort:
         if finger_web == "":
             self.browser = ChromeDriver(current_working_dir, current_working_dir)
         else:
-            self.browser = AdsChromeDriver(current_working_dir, current_working_dir, finger_web)
+            self.browser = HubChromeDriver(current_working_dir, current_working_dir, finger_web)
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(logging.DEBUG)
 
@@ -142,6 +142,7 @@ class YouTubeUploaderShort:
         time.sleep(YOUTUBE_CONSTANT.SHORT_WAIT_TIME)
 
         self.browser.quit()
+
 
     def __write_field(self, xpath, dic):
         self.browser.find_element_by_xpath(xpath).click()
