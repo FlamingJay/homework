@@ -13,7 +13,6 @@ def pick_video(hist_path, target_path):
     :param path:
     :return:
     '''
-    print(target_path)
     history = []
     if not os.path.exists(hist_path):
         file = open(hist_path, "w", encoding="utf-8")
@@ -23,9 +22,10 @@ def pick_video(hist_path, target_path):
             history.append(line.strip())
 
     # 随机上传
-    files = os.listdir(target_path)
+    files = get_file_list(target_path)
     target = ""
     for file in files:
+        print(file)
         if file not in history:
             target = file
             break
@@ -42,6 +42,18 @@ def add_hist(path, name):
     '''
     with open(path, 'a', encoding="utf-8") as f:
         f.write(name + "\n")
+
+
+def get_file_list(file_path):
+    '''
+    按照文件最后修改时间进行升序排序
+    '''
+    dir_list = os.listdir(file_path)
+    if not dir_list:
+        return
+    else:
+        dir_list = sorted(filter(lambda item: 'mp4' in item, dir_list), key=lambda x: os.path.getmtime(os.path.join(file_path, x)))
+        return dir_list
 
 
 if __name__ == "__main__":

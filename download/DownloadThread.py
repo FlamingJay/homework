@@ -2,6 +2,7 @@ from PyQt5.QtCore import QThread, pyqtSignal
 
 from download.douyin_v2 import DouyinDownloader
 from download.youtube import YoutubeDownloader
+from download.xigua import XiguaDownloader
 import os
 
 
@@ -23,6 +24,8 @@ class DownloadThread(QThread):
             return DouyinDownloader()
         elif web == 'youtube':
             return YoutubeDownloader()
+        elif web == 'xigua':
+            return XiguaDownloader()
         else:
             return None
 

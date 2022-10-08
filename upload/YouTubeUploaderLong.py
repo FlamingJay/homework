@@ -1,10 +1,9 @@
 #-*- coding: utf-8 -*-
 from typing import DefaultDict, Optional
 from selenium.webdriver.common.action_chains import ActionChains
-import time
 from collections import defaultdict
 import json
-import logging
+import logging, os, time
 from Constant import YOUTUBE_CONSTANT
 from ChromeDriver import ChromeDriver
 from AdsChrome import AdsChromeDriver
@@ -99,6 +98,13 @@ class YouTubeUploaderLong:
         self.browser.driver.implicitly_wait(5)
 
         ActionChains(self.browser.driver).move_to_element(desc_ele).click(desc_ele).send_keys(self.description).perform()
+
+        # 选择缩略图
+        pic_path = absolute_video_path.replace(r".mp4", r".jpg")
+        if os.path.exists(pic_path):
+            self.logger.info("step 5: fill in the cover of video....")
+            self.browser.find_element_by_id(YOUTUBE_CONSTANT.PICTURE_BUTTON).send_keys(pic_path)
+            self.browser.driver.implicitly_wait(5)
 
         self.browser.driver.execute_script("window.scrollTo(150, 900);")
         time.sleep(YOUTUBE_CONSTANT.USER_WAITING_TIME)

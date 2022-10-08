@@ -18,6 +18,9 @@ class YOUTUBE_CONSTANT:
     VIDEO_TAGS = 'tags'
     DESCRIPTION_CONTAINER = '/html/body/ytcp-uploads-dialog/tp-yt-paper-dialog/div/ytcp-animatable[1]/' \
                             'ytcp-uploads-details/div/ytcp-uploads-basics/ytcp-mention-textbox[2]'
+
+    PICTURE_BUTTON = 'file-loader'
+
     TEXTBOX = 'textbox'
     TEXT_INPUT = 'text-input'
     RADIO_LABEL = 'radioLabel'

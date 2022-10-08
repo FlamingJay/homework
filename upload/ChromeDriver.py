@@ -105,7 +105,8 @@ class ChromeDriver(object):
         :param xpath:
         :return:
         '''
-        return self.driver.find_element_by_xpath(xpath)
+        return self.driver.find_element("xpath", xpath)
+        # return self.driver.find_element_by_xpath(xpath)
 
     def find_element_by_name(self, name):
         '''
@@ -113,7 +114,8 @@ class ChromeDriver(object):
         :param name:
         :return:
         '''
-        return self.driver.find_element_by_name(name)
+        return self.driver.find_element("name", name)
+        # return self.driver.find_element_by_name(name)
 
     def find_element_by_id(self, id):
         '''
@@ -121,7 +123,8 @@ class ChromeDriver(object):
         :param xpath:
         :return:
         '''
-        return self.driver.find_element_by_id(id)
+        return self.driver.find_element("id", id)
+        # return self.driver.find_element_by_id(id)
 
     def find_elements_by_id(self, id):
         '''
@@ -129,7 +132,8 @@ class ChromeDriver(object):
         :param xpath:
         :return:
         '''
-        return self.driver.find_elements_by_id(id)
+        return self.driver.find_elements("id", id)
+        # return self.driver.find_elements_by_id(id)
 
     def find_element_by_class_name(self, class_name):
         '''
@@ -137,7 +141,8 @@ class ChromeDriver(object):
         :param xpath:
         :return:
         '''
-        return self.driver.find_element_by_class_name(class_name)
+        return self.driver.find_element("class_name", id)
+        # return self.driver.find_element_by_class_name(class_name)
 
     def has_cookies_for_current_website(self, account: str = "", create_folder_if_not_exists: bool = True) -> bool:
         return os.path.exists(

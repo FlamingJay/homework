@@ -87,6 +87,11 @@
          <string>youtube</string>
         </property>
        </item>
+       <item>
+        <property name="text">
+         <string>xigua</string>
+        </property>
+       </item>
       </widget>
       <widget class="QLineEdit" name="input_home_url">
        <property name="geometry">
