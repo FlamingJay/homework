@@ -6,7 +6,7 @@ from abc import ABC
 from contextlib import closing
 
 import requests
-
+import execjs
 from download.AutoDownLoader import AutoDownLoader
 
 
@@ -22,12 +22,37 @@ class XiguaDownloader(AutoDownLoader, ABC):
 		home_resp = requests.get(home_page_url, headers=self.headers)
 		home_resp.encoding = 'utf-8'
 		home_html = home_resp.text
-		group_ids = re.findall('"groupId":"(.*?)",', home_html)
+
+		# 获取主页视频总数量，主页昵称
+		video_total_count = re.findall('"video_total_count":"(.*?)"', home_html)[0]
+
 		nickname = re.findall('<title data-react-helmet="true">(.*)的个人主页 - 西瓜视频</title>', home_html)[0]
+		user_id = home_page_url.split("/")[4]
+
+		# 反爬出签名
+		path = os.path.join(os.path.dirname(__file__), "xigua.js")
+		jscode = execjs.compile(open(path).read())
+		nonce = home_resp.cookies.get("__ac_nonce")
+		ctx = jscode.call("getSign", nonce, home_page_url)
+		signature = ctx
+
+		# 真正的存储视频的地址
+		url = 'https://www.ixigua.com/api/videov2/author/new_video_list?to_user_id={0}&offset=0&limit={1}&_signature={2}'\
+			.format(user_id, video_total_count, signature)
+		video_html = requests.get(url, headers=self.headers)
+		video_html.encoding = 'utf-8'
+		json_video = video_html.text
+		json_video_data = json.loads(json_video)
+		video_list = json_video_data['data']['videoList']
+
+		# 得到所有视频的id
+		group_ids = [item['group_id'] for item in video_list]
+
 		parsed_urls_names = []
 		# 标题正则修改
 		rstr = r"[\/\\\:;\*#￥%$!@^……&()\?\"\<\>\|\n\t]"
-		for id in group_ids:
+		for id in set(group_ids):
+			# 视频下载地址（伪装）
 			url = 'https://www.ixigua.com/{}'.format(id)
 
 			resp = requests.get(url, headers=self.headers)
@@ -48,7 +73,6 @@ class XiguaDownloader(AutoDownLoader, ABC):
 			video_url = base64.b64decode(main_url).decode()
 
 			parsed_urls_names.append([video_url, video_name])
-			print(video_name + ":" + '\t' + video_url)
 
 		return nickname, parsed_urls_names
 

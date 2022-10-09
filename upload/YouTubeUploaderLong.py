@@ -6,7 +6,7 @@ import json
 import logging, os, time
 from Constant import YOUTUBE_CONSTANT
 from ChromeDriver import ChromeDriver
-from AdsChrome import AdsChromeDriver
+from HubChromeDriver import HubChromeDriver
 logging.basicConfig()
 
 
@@ -24,7 +24,7 @@ class YouTubeUploaderLong:
         if finger_web == "":
             self.browser = ChromeDriver(current_working_dir, current_working_dir)
         else:
-            self.browser = AdsChromeDriver(current_working_dir, current_working_dir, finger_web)
+            self.browser = HubChromeDriver(current_working_dir, current_working_dir, finger_web)
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(logging.DEBUG)
 
