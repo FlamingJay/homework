@@ -71,7 +71,7 @@ class XiguaDownloader(AutoDownLoader, ABC):
 					break
 
 			video_url = base64.b64decode(main_url).decode()
-
+			print("{0}:{1}".format(video_name, video_url))
 			parsed_urls_names.append([video_url, video_name])
 
 		return nickname, parsed_urls_names
