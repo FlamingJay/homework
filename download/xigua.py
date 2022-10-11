@@ -1,4 +1,5 @@
 import base64
+import math
 import os
 import re
 import json
@@ -32,13 +33,28 @@ class XiguaDownloader(AutoDownLoader, ABC):
 		# 反爬出签名
 		path = os.path.join(os.path.dirname(__file__), "xigua.js")
 		jscode = execjs.compile(open(path).read())
+
+		epoch = int(math.floor(int(video_total_count) / 30))
+		group_ids = []
 		nonce = home_resp.cookies.get("__ac_nonce")
 		ctx = jscode.call("getSign", nonce, home_page_url)
 		signature = ctx
+		for i in range(epoch):
+			# 真正的存储视频的地址
+			url = 'https://www.ixigua.com/api/videov2/author/new_video_list?to_user_id={0}&offset={1}&limit=30&_signature={2}'\
+				.format(user_id, i * 30, signature)
+			video_html = requests.get(url, headers=self.headers)
+			video_html.encoding = 'utf-8'
+			json_video = video_html.text
+			json_video_data = json.loads(json_video)
+			video_list = json_video_data['data']['videoList']
+
+			# 得到所有视频的id
+			group_ids += [item['group_id'] for item in video_list]
 
 		# 真正的存储视频的地址
-		url = 'https://www.ixigua.com/api/videov2/author/new_video_list?to_user_id={0}&offset=0&limit={1}&_signature={2}'\
-			.format(user_id, video_total_count, signature)
+		url = 'https://www.ixigua.com/api/videov2/author/new_video_list?to_user_id={0}&offset={1}&limit={2}&_signature={3}' \
+			.format(user_id, epoch * 30, int(video_total_count) - epoch * 30, signature)
 		video_html = requests.get(url, headers=self.headers)
 		video_html.encoding = 'utf-8'
 		json_video = video_html.text
@@ -46,7 +62,7 @@ class XiguaDownloader(AutoDownLoader, ABC):
 		video_list = json_video_data['data']['videoList']
 
 		# 得到所有视频的id
-		group_ids = [item['group_id'] for item in video_list]
+		group_ids += [item['group_id'] for item in video_list]
 
 		parsed_urls_names = []
 		# 标题正则修改
